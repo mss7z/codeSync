@@ -98,10 +98,10 @@ class errorManager:noMovCopyable{
 	};
 	std::vector<css*> cssLocker;
 	public:
-	constexpr static const char *cont=":\n\t";
-	constexpr static const char *add="\n\t";
-	constexpr static const char *indent="\n\t\t";
-	constexpr static const char *dot="* ";
+	constexpr static char *cont=":\n\t";
+	constexpr static char *add="\n\t";
+	constexpr static char *indent="\n\t\t";
+	constexpr static char *dot="* ";
 	css err{this},warn{this},info{this},chk{this};
 	void clear();
 	bool isErr()const{return !(err.str().empty());}
@@ -396,15 +396,16 @@ class lineStringReader:public lineStreamReader{
 class csidDictHash{
 	//csidTypeの中で検索を早くするために使う
 	private:
-	constexpr static const int hashTableSize=0b1<<13;
-	constexpr static const int hashTableMask=hashTableSize-1;
+	//13の意味についてはcsidDictHash::hashFuncを参照
+	constexpr static int hashTableSize=0b1<<13;
+	constexpr static int hashTableMask=hashTableSize-1;
 	int hashTable[hashTableSize];
 	const int *hashTableEndP;
 	bool isFullTable=false;
 	int hashFunc(const std::string&);
 	int *tableP;
 	public:
-	constexpr static const int NONE=-1,FULL=-2;
+	constexpr static int NONE=-1,FULL=-2;
 	csidDictHash();
 	int getCandidate(const std::string&);
 	int nextCandidate();
@@ -990,7 +991,6 @@ class targetDirFiles:noMovCopyable{
 		const fileInfo info;
 		const csidType selfCsid;
 		tableLineRW tlrw;
-		//fileLineInfo getFileLineInfo();
 		
 		public:
 		aFile(tablesType&,const fs::directory_entry&,const fs::path&);
