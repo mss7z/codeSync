@@ -387,7 +387,6 @@ csidLineReader::status csidLineReader::getCmdSwitchWhenNone(const std::string &c
 	}
 }
 
-
 csidLineReader::status csidLineReader::getCmdSwitchWhenEnable(const std::string &cmd)noexcept{
 	if(cmd=="line"){
 		opt=NONE;
@@ -440,11 +439,6 @@ void csidLineReader::loadCsidFromCsidSeparaterSS(){
 	if(csid.empty()){
 		throw fileError("CSIDが虚無 (\"\")");
 	}
-	/*csid.clear();
-	csidSeparaterSS>>csid;
-	if(csid.empty()){
-		throw std::string("CSIDが虚無");
-	}*/
 }
 
 csidLineReader::csidLineReader(lineReader *p):
@@ -470,8 +464,7 @@ csidLineReader::status csidLineReader::nextLine(){
 	if(isPracticableCsidSeparaterSS()){
 		cmd=getCmdFromCsidSeparaterSS();
 		if(cmd==LINE){
-			loadCsidFromCsidSeparaterSS();//0だから上書きしないのよ♡
-			////////////////////////////////////outStrに書き込みを→は？何言ってんの？雑魚がよ、飯食え飯
+			loadCsidFromCsidSeparaterSS();
 			return LINE;
 		}else if(cmd==START){
 			loadCsidFromCsidSeparaterSS();
@@ -736,6 +729,7 @@ void tableCsids<CC>::aCsid::selectWritev(){
 	const int internalVarCont=std::count_if(begin,end,isOpt<INTERNAL>);
 	//可読性悪すぎ
 	if(internalVarCont>0){
+		//プログラム内部で自動生成されるinternal optionがある場合
 		if(internalVarCont!=1){
 			throw std::logic_error("option=INTERNALのaVarが複数存在");
 		}
@@ -784,7 +778,7 @@ void tableCsids<CC>::aCsid::selectWritev(){
 		writev=std::find_if(begin,end,isEnableCont1);
 	}else{
 		//以上のどれにもあてはまらず、推論できない場合
-		em.err<<getSelfName()<<"は"<<varCont<<"種類があり、masterを特定できません"<<getFLInfosStr()<<std::endl;//ここでthrow→するとでも思ったか
+		em.err<<getSelfName()<<"は"<<varCont<<"種類があり、masterを特定できません"<<getFLInfosStr()<<std::endl;
 	}
 	DBGOUTLN("mileaa");
 	if(isWritevAndCheck()){
@@ -998,7 +992,6 @@ void tableLineWriter::writeACsid(csidReader4Write &reader){
 void tableLineWriter::write(){
 	try{
 		line.resetBeforeWrite();
-		//const csidType csid=info.getStr();
 		const csidContentDetail &writeContent=table.part.getWriteContent(csid);
 		if(writeContent.isEmpty()){
 			throw std::logic_error("書き込み時に初期のファイルのcsidContentが空白");
@@ -1022,7 +1015,6 @@ tableLineRW::tableLineRW(const csidType &csida,tablesType &tablea,lineRW &linea,
 //////////////////////// targetDirFiles
 bool targetDirFiles::isTagExtension(const fs::path ext){
 	for(const auto& i : tagExtensions){
-		//std::cout<<ext<<"=="<<i<<std::endl;
 		if(ext==i)return true;
 	}
 	return false;

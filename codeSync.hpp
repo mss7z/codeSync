@@ -81,7 +81,6 @@ class [[nodiscard]] fileError{
 	const std::string& getStr()const{return s;}
 };
 
-
 //////////////////////// errorManager
 class errorManager:noMovCopyable{
 	//エラーやインフォメーションをstreamに記憶しておく
@@ -99,10 +98,10 @@ class errorManager:noMovCopyable{
 	};
 	std::vector<css*> cssLocker;
 	public:
-	constexpr static char *cont=":\n\t";
-	constexpr static char *add="\n\t";
-	constexpr static char *indent="\n\t\t";
-	constexpr static char *dot="* ";
+	constexpr static const char *cont=":\n\t";
+	constexpr static const char *add="\n\t";
+	constexpr static const char *indent="\n\t\t";
+	constexpr static const char *dot="* ";
 	css err{this},warn{this},info{this},chk{this};
 	void clear();
 	bool isErr()const{return !(err.str().empty());}
@@ -856,7 +855,7 @@ class tableCsids:noMovCopyable,
 			std::vector<infoType> FLInfos;
 			int optCont[INT_OPTION_NUM]={};
 			int totalCont()const{return FLInfos.size();}
-			template<class CCA,class ITA>
+			template<class CCA,class ITA>//CCA=csid content arg ITA=info type arg
 			aVar(CCA &&contenta,ITA &&infoa, const option opta);
 			std::string getFLInfosStr()const{return infoTypeBase::getStrFrom(FLInfos);}
 			void print() const;
