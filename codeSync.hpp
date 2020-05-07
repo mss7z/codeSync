@@ -81,6 +81,7 @@ class [[nodiscard]] fileError{
 	const std::string& getStr()const{return s;}
 };
 
+
 //////////////////////// errorManager
 class errorManager:noMovCopyable{
 	//エラーやインフォメーションをstreamに記憶しておく
