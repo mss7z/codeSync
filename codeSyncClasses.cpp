@@ -1,6 +1,7 @@
 #include "codeSync.hpp"
 
 namespace codeSync{
+//////////////////////// errorManager
 errorManager em;
 
 errorManager::css::css (errorManager *parenta):
@@ -29,7 +30,7 @@ std::ostream& operator<<(std::ostream &stream,const errorManager &manager){
 	return stream;
 }
 
-
+//////////////////////// timeLib
 template<typename TP>
 timeLib<TP>::timeLib(const TP tpa):
 	//ここで変換するが処理時間などの影響で精度落ちると思われる
@@ -54,6 +55,7 @@ std::string timeLib<TP>::getStrOnlyNum() const{
 	return s.str();
 }
 
+//////////////////////// infoType
 template<class IT>
 std::string infoTypeBase::getStrFrom(const std::vector<IT> &v){
 	
@@ -75,12 +77,9 @@ infoType::infoType(const infoTypeBase &d):
 {
 	DBGOUTLN("参照モードでinfoTypeが生成"<<SVAL(itp->getStr()));
 }
-/*template<class IT>
-infoType::infoType(IT &&r):
-	itp(new typename std::remove_const<typename std::remove_reference<decltype(r)>::type>::type{std::forward<IT>(r)}){}*/
 std::vector<fileInfo::fileInfoBody> fileInfo::bodys;
 
-
+//////////////////////// streamLocker
 auto streamLockerClass::close(std::fstream *tag){
 	std::vector<std::fstream*>::iterator tagItr=std::find(fstreams.begin(),fstreams.end(),tag);
 	if(tagItr!=fstreams.end()){
@@ -107,6 +106,7 @@ streamLockerClass::~streamLockerClass(){
 }
 streamLockerClass streamLocker;
 
+//////////////////////// LINE!!!
 lineStreamReader::lineStreamReader(std::iostream *stpa):
 	stp(stpa)
 {}
@@ -232,6 +232,7 @@ void lineStringReader::resetBeforeWrite(){
 	ss.str("");
 }
 
+//////////////////////// csidType
 csidDictHash::csidDictHash():
 	hashTableEndP(hashTable+hashTableSize)
 {
@@ -337,7 +338,7 @@ constCsidFinder<T>::constCsidFinder(const T &nonea):
 	csidFinderBase<T>(csidType::getCsidTotal(),nonea)
 {}
 
-
+//////////////////////// csidReader(RW)
 bool csidLineReader::isPracticableNextLine(){
 	line=ll->getNext();
 	return line.isAvailable();
@@ -533,6 +534,7 @@ csidLineReaderRapChecker::status csidLineReaderRapChecker::nextLine(){
 }
 
 
+//////////////////////// csidContent
 int csidContent::addToStrsWithNum(const std::string &s){
 	const int num=strs.size();
 	addToStrs(s);
@@ -658,10 +660,8 @@ std::string_view csidCsidContentDetailReader::getLineIndent(){
 	s.remove_suffix(s.size()-i);
 	return s;
 }
-/////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////// TABLE //////////////////////////////////////////
-
+//////////////////////// TABLE!!!!!
 template<typename CC>
 const CC tableCsids<CC>::emptyContent;
 
@@ -852,10 +852,17 @@ template<typename CC>
 bool tableCsids<CC>::isThereCsid(const csidType &csida)const{
 	return csidsFinder.find(csida)!=FINDER_NONE;
 }
-/////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////// Backupper ////////////////////////////////////////////
+void tablesType::selectWritevs(){
+	part.selectWritevs();
+	line.selectWritevs();
+}
+void tablesType::print(){
+	part.print();
+	line.print();
+}
 
+//////////////////////// filesBackupper
 fs::path filesBackupper::toCurrentGenerator(fs::path fromabs){
 	assert(fromabs.filename()!="");
 	
@@ -895,18 +902,8 @@ void filesBackupper::backup(const fs::path &backupFilea){
 	DBGOUT("backupFIlea:"<<backupFilea<<" filesBackupper::backup:"<<toFile<<std::endl);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////// targetDirFiles ////////////////////////////////////
-
-void tablesType::selectWritevs(){
-	part.selectWritevs();
-	line.selectWritevs();
-}
-void tablesType::print(){
-	part.print();
-	line.print();
-}
+//////////////////////// table <-> lineReader
 tableCsidsKeyword::option tableLineReader::optConv(csidLineReaderRapChecker::option opta){
 	using cr=csidLineReaderRapChecker;
 	using to=tableCsidsKeyword;
@@ -1020,11 +1017,9 @@ tableLineRW::tableLineRW(const csidType &csida,tablesType &tablea,lineRW &linea,
 	tableLineReader(csida,tablea,linea,infoa),
 	tableLineWriter(csida,tablea,linea)
 {}
-/*tableLineRW::~tableLineRW(){
-	delete line;
-}*/
 
 
+//////////////////////// targetDirFiles
 bool targetDirFiles::isTagExtension(const fs::path ext){
 	for(const auto& i : tagExtensions){
 		//std::cout<<ext<<"=="<<i<<std::endl;
@@ -1054,15 +1049,6 @@ fs::path targetDirFiles::shapingTagDir(const fs::path &tag){
 void targetDirFiles::addInternalCsid(const csidType &csid,const std::string &str){
 	lineStringReader lineRdr{str};
 	tableLineReader{csid,table,lineRdr,stringInfo("INTERNAL "+csid.getStrCsid())}.read();
-	
-	/*try{
-		const tableCsidsKeyword::option opt=tableCsidsKeyword::INTERNAL;
-		reader.resetBeforeNextLine();
-		csidContentDetail content{loadACsid(csidRdr,table)};
-		table.part.addc(csid,content,infoTypeGen<stringInfo>("INTERNAL "+csid.getStrCsid()),opt);
-	}catch(const std::string &s){
-		throw std::logic_error("内部文章の解析中に次の問題が発生しました\n"+s);
-	}*/
 }
 	
 void targetDirFiles::addInternalCsidsIfDef(){
@@ -1077,8 +1063,6 @@ void targetDirFiles::addInternalCsidsIfDef(){
 ===================================================="
 		};
 		addInternalCsid(csid,s);
-		/*csidContentDetailWriter cc;
-		cc.addLine("");*/
 	}
 }
 

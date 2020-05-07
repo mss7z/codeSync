@@ -80,6 +80,8 @@ class [[nodiscard]] fileError{
 	operator std::string()const{return s;}
 	const std::string& getStr()const{return s;}
 };
+
+//////////////////////// errorManager
 class errorManager:noMovCopyable{
 	//エラーやインフォメーションをstreamに記憶しておく
 	private:
@@ -117,6 +119,7 @@ inline void errorManager::clear(){
 	}
 }
 
+//////////////////////// timeLib
 template<typename TP>
 class timeLib {
 	//C++20になるといらなくなる？クラス
@@ -139,6 +142,7 @@ class timeLib {
 };
 using ftimeLib = timeLib<fs::file_time_type>;
 
+//////////////////////// infoType
 class infoTypeBase{
 	public:
 	virtual std::string getStr()const=0;
@@ -300,7 +304,7 @@ inline std::string stringInfo::getStr()const{DBGOUTLN("milebb");
 	return s;
 }
 
-
+//////////////////////// streamLocker
 class streamLockerClass{
 	//classのメンバにstream乗っけてたら面白いことになったから
 	private:
@@ -312,7 +316,7 @@ class streamLockerClass{
 };
 extern streamLockerClass streamLocker;
 
-
+//////////////////////// LINE!!!
 class lineBaseClass{
 	protected:
 	lineBaseClass()=default;
@@ -407,6 +411,7 @@ class lineStringReader:public lineStreamReader{
 	void print(){std::cout<<"csidStringReader-----\n"<<ss.str()<<std::endl;}
 };
 
+//////////////////////// csidType
 class csidDictHash{
 	private:
 	constexpr static const int hashTableSize=0b1<<13;
@@ -578,6 +583,8 @@ inline void csidIsFinder<PC>::set(const csidType &toa){
 using constCsidIsFinder=csidIsFinder<constCsidFinder<bool>>;
 using flexibleCsidIsFinder=csidIsFinder<flexibleCsidFinder<bool>>;
 
+
+//////////////////////// csidReader(RW)
 struct csidKeyword{
 	enum status{ORDINARILY,START,LINE,END,NONE_START,NONEC,EGG,NONE_END,EOS,UNKNOWN_STS};
 	enum option{NONE,MASTER,UNMASTER,UNKNOWN_OPT};
@@ -676,6 +683,7 @@ inline void csidLineReaderRapChecker::resetBeforeNextLine(){
 	finder.clear();
 }
 
+//////////////////////// csidContent
 class csidContent{
 	private:
 	std::vector<std::string> strs;
@@ -832,6 +840,7 @@ class csidCsidContentDetailReader:
 	csidCsidContentDetailReader& operator=(csidCsidContentDetailReader&&)=delete;
 };
 
+//////////////////////// TABLE!!!!!
 struct tableCsidsKeyword{
 	enum option{NONE,MASTER,UNMASTER,INTERNAL,INT_OPTION_NUM};
 };
@@ -900,6 +909,15 @@ template<typename CC>
 inline const CC& tableCsids<CC>::getWriteContent(const csidType &csida)const{
 	return csids[csidsFinder.find(csida)].getWriteContent();
 }
+struct tablesType{
+	tableCsids<csidContentDetail> part{"part"};
+	tableCsids<csidContent> line{"line"};
+	void selectWritevs();
+	void print();
+};
+
+
+//////////////////////// filesBackupper
 class filesBackupper {
 	//ファイルをバックアップするためのやつ
 	private:
@@ -912,13 +930,8 @@ class filesBackupper {
 	void backup(const fs::path &backupFilea);
 };
 
-struct tablesType{
-	tableCsids<csidContentDetail> part{"part"};
-	tableCsids<csidContent> line{"line"};
-	void selectWritevs();
-	void print();
-};
 
+//////////////////////// table <-> lineReader
 class tableLineReader{
 	private:
 	const csidType &csid;
@@ -955,6 +968,8 @@ class tableLineRW:
 	tableLineRW(const csidType&,tablesType&,lineRW&,const infoTypeCastable&);
 };
 
+
+//////////////////////// targetDirFiles
 class targetDirFiles:noMovCopyable{
 	//ここより上にあったclassなどをまとめてcodeSyncとしての仕事を行う最も高級な奴
 	private:
