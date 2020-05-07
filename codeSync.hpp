@@ -152,14 +152,10 @@ class infoTypeBase{
 };
 class [[nodiscard]] infoType:public infoTypeBase{
 	private:
-	//std::unique_ptr<infoTypeBase> itp;
 	std::shared_ptr<const infoTypeBase> itp;
-	//infoTypeBase *itp;
 	public:
 	infoType(const infoTypeBase*);
 	explicit infoType(const infoTypeBase&);
-	/*template<class IT>
-	infoType(IT&&);*/
 	template<class IT,typename... ARGS>
 	friend infoType infoTypeGen(ARGS... args);
 	template<class IT>
@@ -180,13 +176,6 @@ inline std::string infoType::getStr()const{
 	return itp->getStr();
 }
 
-/*class infoTypeCastable:public infoTypeBase{
-	protected:
-	infoTypeCastable()=default;
-	public:
-	//virtual std::string getStr()const;//宣言しかないのはわざと
-	//virtual operator infoType()const{return infoType{new typename std::remove_const<typename std::remove_reference<decltype(*this)>::type>::type{*this}};};
-};*/
 using infoTypeCastable=infoTypeBase;
 class [[nodiscard]] fileInfo:public infoTypeCastable{
 	//その名の通りファイルの情報
@@ -248,7 +237,6 @@ struct [[nodiscard]] lineInfo:public infoTypeCastable{
 	lineInfo():lineNum(0){}
 	
 	std::string getStr()const override;
-	//operator infoType()const{return infoType{new lineInfo{*this}};};
 };
 
 inline std::string lineInfo::getStr()const{
@@ -265,26 +253,15 @@ struct lineType:public lineInfo{
 	bool isAvailable()const{return isAvailableVal;}
 	void unavailable(){isAvailableVal=false;}
 };
-/*class [[nodiscard]] fileLineInfo:public infoTypeBase{
-	private:
-	const fileInfo file;
-	const lineInfo line;
-	public:
-	//行情報にその行のファイルの情報をつけたもの
-	fileLineInfo(const fileInfo &filea,const lineInfo &linea):
-		file(filea),line(linea){}
-	std::string getStr()const override;
-};*/
 class [[nodiscard]] doubleInfo:public infoTypeCastable{
+	//二つの情報を入れて改行区切りで表示
 	private:
 	const infoType mother;
 	const infoType child;
 	public:
-	//行情報にその行のファイルの情報をつけたもの
 	doubleInfo(const infoType &filea,const infoType &childa):
 		mother(filea),child(childa){}
 	std::string getStr()const override;
-	//operator infoType()const{return infoType{new doubleInfo{*this}};};
 };
 inline std::string doubleInfo::getStr()const{
 	return mother.getStr()+"\n"+child.getStr();
@@ -296,7 +273,6 @@ class [[nodiscard]] stringInfo:public infoTypeCastable{
 	public:
 	stringInfo(const std::string&);
 	std::string getStr()const override;
-	//operator infoType()const{return infoType{new stringInfo{*this}};};
 };
 inline stringInfo::stringInfo(const std::string &sa):
 	s(sa){}
@@ -317,6 +293,7 @@ class streamLockerClass{
 extern streamLockerClass streamLocker;
 
 //////////////////////// LINE!!!
+//ここにあるクラスは、streamなどから、行を一行ずつ、書き込み、読み込みをする
 class lineBaseClass{
 	protected:
 	lineBaseClass()=default;
@@ -342,6 +319,7 @@ class lineRW:
 class lineStreamReader:
 	public lineRW
 {
+	//streamを行単位で読み書き
 	private:
 	std::iostream *stp;
 	lineType li;
@@ -366,7 +344,7 @@ inline bool lineStreamReader::isStreamEOS()const{
 	return stp->eof()||stp->fail();
 }
 class lineFileReader:public lineStreamReader{
-	//fileからcsidを解析
+	//fileを行単位で読み書き
 	private:
 	std::fstream *f;
 	const fs::path path;
@@ -383,6 +361,8 @@ inline void lineFileReader::delContent(){
 }
 
 class lineSeekReader:public lineReader{
+	//任意のlineStreamReaderに寄生し、その行の区間を使う(std::string_viewに近い思考)
+	//だけど、現在使っていません
 	private:
 	const lineType emptyLi;
 	int startLineNum=0,endLineNum=0,markLineNum=0;
@@ -402,6 +382,7 @@ class lineSeekReader:public lineReader{
 	//friend lineSeekReader;
 };
 class lineStringReader:public lineStreamReader{
+	//stringstreamを行単位で読み書き
 	private:
 	std::stringstream ss;
 	public:
@@ -413,6 +394,7 @@ class lineStringReader:public lineStreamReader{
 
 //////////////////////// csidType
 class csidDictHash{
+	//csidTypeの中で検索を早くするために使う
 	private:
 	constexpr static const int hashTableSize=0b1<<13;
 	constexpr static const int hashTableMask=hashTableSize-1;
@@ -456,6 +438,7 @@ inline void csidDictHash::setCandidate(const int v){
 }
 	
 class csidType{
+	//csidを記録しておく
 	private:
 	static std::vector<std::string> dict;//途中から値を加えてはならない
 	public:
@@ -531,8 +514,6 @@ class csidFinderBase{
 		find(const csidType&)const=0;
 	void unset(const csidType&);
 	void clear(){table.clear();}
-	/*template<>
-	auto find<bool>(const csidType &toa)->typename std::enable_if<std::is_same<T,bool>::value,bool>::type;*/
 };
 template<typename T>
 class flexibleCsidFinder:public csidFinderBase<T>{
@@ -585,6 +566,7 @@ using flexibleCsidIsFinder=csidIsFinder<flexibleCsidFinder<bool>>;
 
 
 //////////////////////// csidReader(RW)
+//ここのクラスは、上記のlineReaderを使って、文の構造を読み取る
 struct csidKeyword{
 	enum status{ORDINARILY,START,LINE,END,NONE_START,NONEC,EGG,NONE_END,EOS,UNKNOWN_STS};
 	enum option{NONE,MASTER,UNMASTER,UNKNOWN_OPT};
@@ -684,7 +666,9 @@ inline void csidLineReaderRapChecker::resetBeforeNextLine(){
 }
 
 //////////////////////// csidContent
+//ここは、csidの内容(content)を記録するためのクラス
 class csidContent{
+	//csidContentの基本となるクラス
 	private:
 	std::vector<std::string> strs;
 	protected: //strsの途中から要素が追加されてはいけない
@@ -712,10 +696,12 @@ inline bool csidContent::isEmpty()const{
 class csidContentLineWriter:
 	public csidContent
 {
+	//csidContentに1行だけの書き込みを行う
 	public:
 	csidContentLineWriter(const std::string&);
 };
 class csidContentLineReader{
+	//csidContentから1行だけの読み込みを行う
 	public:
 	const csidContent& lordCC;
 	public:
@@ -730,6 +716,7 @@ class csidContentPartWriter:
 	public csidContent,
 	public lineWriter
 {
+	//csidContentに書き込みを行う
 	public:
 	void resetBeforeWrite()override;
 	void addNext(const std::string&)override;
@@ -743,6 +730,7 @@ inline void csidContentPartWriter::addNext(const std::string &str){
 class lineCsidContentReader:
 	public lineReader
 {
+	//csidContentから読み込みを行う
 	private:
 	const csidContent& lordCC;
 	std::vector<std::string>::const_iterator itr;
@@ -772,6 +760,7 @@ class csidContentDetail:
 	public csidContent,
 	public csidKeyword
 {
+	//基本となるcsidContentに加えて、文構造の解析結果も保存する
 	public:
 	struct infosType{
 		int refNum;
@@ -795,6 +784,7 @@ class csidContentDetail:
 	const decltype(infos)& refInfos()const{return infos;}
 };
 class csidContentDetailWriter:public csidContentDetail{
+	//csidContentDetailに書き込みを行う
 	public:
 	void addLine(const std::string&,const analyzedLine);
 	void addLine(const std::string&);
@@ -803,6 +793,7 @@ inline void csidContentDetailWriter::addLine(const std::string &s){
 	addToStrs(s);
 }
 class csidContentDetailReader:public csidKeyword{
+	//csidContentDetailから読み込みを行う
 	private:
 	using infosType=csidContentDetail::infosType;
 	const csidContentDetail &lordCCD;
@@ -822,6 +813,8 @@ class csidContentDetailReader:public csidKeyword{
 class csidCsidContentDetailReader:
 	public csidReader4Write
 {
+	//名前が紛らわしいが、csidContentDetailReaderを使って、csidReaderのようにふるまう
+	//csid csidContentDetail Reader
 	private:
 	csidContentDetailReader &lordCCDR;
 	const analyzedLine *analyzedP;
@@ -933,6 +926,7 @@ class filesBackupper {
 
 //////////////////////// table <-> lineReader
 class tableLineReader{
+	//lineReaderからtableにデータを書き込む
 	private:
 	const csidType &csid;
 	tablesType &table;
@@ -951,6 +945,7 @@ inline doubleInfo tableLineReader::getDoubleInfo(){
 	return doubleInfo(info,static_cast<infoType>(line.getNow()));
 }
 class tableLineWriter{
+	//tableからlineWriterにデータを書き込む
 	private:
 	const csidType &csid;
 	const tablesType &table;
