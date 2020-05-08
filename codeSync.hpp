@@ -139,6 +139,8 @@ class timeLib {
 	time_t getTime_t()const {return tt;}
 	std::string getStr()const;
 	std::string getStrOnlyNum()const;
+	template<typename TPA>
+	friend std::ostream& operator<<(std::ostream&,const timeLib<TPA>&);
 };
 using ftimeLib = timeLib<fs::file_time_type>;
 
@@ -955,7 +957,6 @@ class tableLineBase{
 	csidType name;
 	csidNamespaceTable &table;
 	tablesType &globalT;
-	
 	tableLineBase(const csidType&,csidNamespaceTable&);
 };
 inline tableLineBase::tableLineBase(const csidType &csida,csidNamespaceTable &tablea):
@@ -963,8 +964,6 @@ inline tableLineBase::tableLineBase(const csidType &csida,csidNamespaceTable &ta
 class tableLineReader:virtual public tableLineBase{
 	//lineReaderからtableにデータを書き込む
 	private:
-	
-	
 	lineReader &line;
 	const infoType info;
 	tableCsidsKeyword::option optConv(csidLineReaderRapChecker::option);
@@ -1001,7 +1000,6 @@ class tableLineRW:
 class targetDirFiles:noMovCopyable{
 	//ここより上にあったclassなどをまとめてcodeSyncとしての仕事を行う最も高級な奴
 	private:
-	static const csidType globalCsid;
 	bool isTagExtension(const fs::path);
 	void addf(const fs::directory_entry&);
 	fs::path shapingTagDir(const fs::path&);

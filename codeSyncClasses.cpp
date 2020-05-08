@@ -45,7 +45,7 @@ timeLib<TP>::timeLib(const TP tpa):
 template<typename TP>
 std::string timeLib<TP>::getStr() const{
 	std::stringstream s;//ここら辺は、Cライクに書いたほうが圧倒的に高速でよき？
-	s<<std::put_time(&tmt,"%Y/%m/%d(%a) %H:%M:%S")<<std::flush;
+	s<<*this<<std::flush;
 	return s.str();
 }
 template<typename TP>
@@ -53,6 +53,11 @@ std::string timeLib<TP>::getStrOnlyNum() const{
 	std::stringstream s;//ここら辺は、Cライクに書いたほうが圧倒的に高速でよき？
 	s<<std::put_time(&tmt,"%Y%m%d%H%M%S")<<std::flush;
 	return s.str();
+}
+template<typename TPA>
+std::ostream& operator<<(std::ostream &stream,const timeLib<TPA> &tl){
+	stream<<std::put_time(&(tl.tmt),"%Y/%m/%d(%a) %H:%M:%S");
+	return stream;
 }
 
 //////////////////////// infoType
@@ -69,12 +74,12 @@ std::string infoTypeBase::getStrFrom(const std::vector<IT> &v){
 infoType::infoType(const infoTypeBase *p):
 	itp(p)
 {
-	DBGOUTLN("ポインタモードでinfoTypeが生成"<<SVAL(itp->getStr()));
+	//DBGOUTLN("ポインタモードでinfoTypeが生成"<<SVAL(itp->getStr()));
 }
 infoType::infoType(const infoTypeBase &d):
 	itp(std::shared_ptr<const infoTypeBase>{},&d)
 {
-	DBGOUTLN("参照モードでinfoTypeが生成"<<SVAL(itp->getStr()));
+	//DBGOUTLN("参照モードでinfoTypeが生成"<<SVAL(itp->getStr()));
 }
 std::vector<fileInfo::fileInfoBody> fileInfo::bodys;
 
@@ -111,12 +116,10 @@ lineStreamRW::lineStreamRW(std::iostream *stpa):
 {}
 const lineType& lineStreamRW::getNext(){
 	if(isLastLine){
-		DBGOUTLN("isLastLineフラグが立ち、えんｄ");
 		li.unavailable();
 		return li;
 	}
 	std::getline((*stp),li.lineStr);
-	//DBGOUTLN("getNext():"<<li.lineStr);
 	li.lineNum++;
 	isLastLine=isStreamEOS();
 	return li;
@@ -127,11 +130,9 @@ const lineType& lineStreamRW::getNow(){
 void lineStreamRW::addNext(const std::string &s){
 	DBGOUTLN("addNext()は次の文字列を追加します: "<<s);
 	if(isFirstLine){
-		//DBGOUT(s<<std::flush);
 		(*stp)<<s<<std::flush;
 		isFirstLine=false;
 	}else{
-		//DBGOUT("\n"<<s<<std::flush);
 		(*stp)<<"\n"<<s<<std::flush;
 	}
 }
@@ -144,6 +145,7 @@ void lineStreamRW::resetSt(){
 	isFirstLine=true;
 }
 void lineStreamRW::gotoLine(int tag){
+	//現在使用されていない関数
 	DBGOUT(li.lineNum<<"から"<<tag);
 	if(tag<=li.lineNum){
 		resetBeforeRead();
@@ -967,7 +969,6 @@ csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 			inContent.addLine(reader.getLineStr());
 			continue;
 		}else if(sts==cr::EOS || sts==cr::END){
-			//DBGOUTLN("ファイルの終了をtargetDirFiles::aFile::loadACsidが受取"<<SVAL(reader.getLineInfo().lineNum));
 			break;
 		}
 		const tableCsidsKeyword::option opt=optConv(reader.getOpt());
@@ -1001,12 +1002,10 @@ csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 	return std::move(inContent);//NRVOどこ行った？std::moveをつけないと普通にコピーされるのですが
 }
 void tableLineReader::read(){
-	DBGOUTLN("targetDirFiles::aFile::loadToが開始");
 	try{
 		const tableCsidsKeyword::option opt=tableCsidsKeyword::INTERNAL;
 		csidLineReaderRapChecker reader{line};
 		reader.resetBeforeNextLine();
-		DBGOUTLN("targetDirFiles::aFile::loadToからloadACsidをコール");
 		csidContentDetail content{readACsid(reader)};
 		globalT.part.addc(mother,content,info,opt);
 	}catch(const fileError &s){
@@ -1084,7 +1083,6 @@ tableLineRW::tableLineRW(const csidType &csida,csidNamespaceTable &tablea,lineRW
 
 
 //////////////////////// targetDirFiles
-const csidType targetDirFiles::globalCsid=csidType::emptyCsid;
 bool targetDirFiles::isTagExtension(const fs::path ext){
 	for(const auto& i : tagExtensions){
 		if(ext==i)return true;
@@ -1116,7 +1114,7 @@ void targetDirFiles::addInternalCsid(const csidType &csid,const std::string &str
 }
 	
 void targetDirFiles::addInternalCsidsIfDef(){
-	if(csidType csid{"__codeSync_selfIntroduction"};table(globalCsid).part.isThereCsid(csid)){
+	if(csidType csid{"__codeSync_selfIntroduction"};table(csidNamespaceTable::global).part.isThereCsid(csid)){
 		const std::string s{"\
 ====================================================\n\
    ##  ##    This document was written with Code Sync.\n\

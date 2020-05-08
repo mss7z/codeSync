@@ -1,9 +1,9 @@
 #include "codeSync.hpp"
 
-
-void waitForEnter()noexcept;
-void codeShareMain(const std::filesystem::path &taga);
-
+namespace{
+	void waitForEnter()noexcept;
+	void codeShareMain(const std::filesystem::path &taga);
+}
 int main (int argc,char *argv[]) {
 	namespace fs=std::filesystem;
 	osSetting();
@@ -46,6 +46,7 @@ int main (int argc,char *argv[]) {
 	std::exit(EXIT_FAILURE);
 }
 
+namespace{
 void waitForEnter()noexcept{
 	int excCont=0;
 	while(true){
@@ -104,3 +105,4 @@ void codeShareMain(const std::filesystem::path &taga){
 	waitForEnter();
 	return;
 }
+}//namespace
