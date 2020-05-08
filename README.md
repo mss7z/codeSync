@@ -1,9 +1,30 @@
 # codeSync
-HTMLファイルの共通部分を同期するために作りました。
+HTMLファイルの共通部分を同期するために作りました。  
+自分で使うことしか考えていないので、雑魚です。
+UTF-8以外だと、マルチバイト文字で表示が文字化けします。（生成されるファイルには影響ないはずです）
 ## 経緯
-モダンなC++を勉強しながら、作ったプログラムです。
-以前まで書いていたのはC++98相当のものだとわかり、まずいなと思ったので休校期間を利用して、C++17で書きました。
-こういう、書き方はよくないなどあったら、ぜひ教えてください。
+プログラミングを学習している学生です。
+モダンなC++を勉強しながら、作ったプログラムです。  
+以前まで書いていたのはC++98相当のものだとわかり、まずいなと思ったので休校期間を利用して、C++17で書きました。  
+モダンなC++は、使い始めて1カ月くらいしかたってないので、こういう書き方はよくないなどあったら、ぜひ教えてください。  
+## コンパイル方法
+
+~~~
+make
+~~~
+
+もしくは
+
+~~~
+g++ -std=c++17 -Wall -Wextra -pedantic-errors -DNDEBUG   -c -o codeSyncMain.o codeSyncMain.cpp
+g++ -std=c++17 -Wall -Wextra -pedantic-errors -DNDEBUG   -c -o codeSyncClasses.o codeSyncClasses.cpp
+g++ -std=c++17 -Wall -Wextra -pedantic-errors -DNDEBUG   -c -o codeSyncInternalStr.o codeSyncInternalStr.cpp
+g++ codeSyncMain.o codeSyncClasses.o codeSyncInternalStr.o -o codeSync.exe
+~~~
+
+次のversionでのコンパイルを確認しています
+> g++ (Rev1, Built by MSYS2 project) 9.3.0
+
 ## 使用法
 ### 基本的な使い方
 以下のようなファイルAとBがあったとします。
@@ -87,8 +108,8 @@ nonestartとnoneendで囲むとその範囲は処理されません
 #csid name unmaster "space s" name指定をしていますが、名前空間が違うので書き込みされません
 #csid end
 
-#csid masterline line_dayo 
-	#csid line line_dayo これはlineです、lineだけはインデントが残ります
+#csid masterline line_dayo これはlineです、lineだけはインデントが残ります
+	#csid line line_dayo 
 ~~~
 
 ~~~
@@ -138,8 +159,8 @@ nonestartとnoneendで囲むとその範囲は処理されません
 #csid name unmaster "space s" name指定をしていますが、名前空間が違うので書き込みされません
 #csid end
 
-#csid masterline line_dayo 
-	#csid masterline line_dayo 
+#csid masterline line_dayo これはlineです、lineだけはインデントが残ります
+	#csid masterline line_dayo これはlineです、lineだけはインデントが残ります
 ~~~
 
 ~~~
@@ -161,5 +182,29 @@ nonestartとnoneendで囲むとその範囲は処理されません
   #csid end
 #csid end
 
-#csid masterline line_dayo 
+#csid masterline line_dayo これはlineです、lineだけはインデントが残ります
 ~~~
+
+まとめると、次のような機能があります。  
+* 基本はstart~endで囲む
+* 自動でバックアップ
+	* 同じディレクトリ改装に"ファイル名_CSBackups"というディレクトリを作る
+	* その中に"ファイル名_時間"のディレクトリが作られる
+	* その中に操作対象のファイルがバックアップされる
+* start~endで囲まれた内容の中でどれを"master"にするかを決め、それで上書きして、同期する
+	* ユニーク（その名前空間で1つだけ）なstart~endで囲まれた内容を "master" として扱う
+	* ただし、明示的に"master" "unmaster"の指定をしたときはそれも考慮する
+	* どれを"master"にすべきか推論できないときはエラーメッセージが出る
+	* "unmaster"は必ず、上書きされる（unmasterしかないときは、内容削除）
+* line
+	* その行だけを同期する
+	* "line"と"masterline"がある（"unmasterline"は、その行が消える場合があるのでわざと実装してない）
+	* インデントは同期されず、元のが残る
+* 入れ子
+	* ただし、深さは10000まで（再帰を使ってるのでスタックオーバーフローを防ぐため）
+* 名前空間的な何か
+	* global ディレクトリ全体で有効(省略時は自動でこれ)
+	* name その直近のglobalの親、もしくはfileに属し、その名前空間でのみ有効
+	* file そのファイルの中だけで有効(上の例では、fileB_oyoには"infile"がなかったので空白になっている)
+
+このほかにも、私自身が忘れてるやつあるかもしれない  
