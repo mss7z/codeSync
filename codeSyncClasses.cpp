@@ -107,10 +107,10 @@ streamLockerClass::~streamLockerClass(){
 streamLockerClass streamLocker;
 
 //////////////////////// LINE!!!
-lineStreamReader::lineStreamReader(std::iostream *stpa):
+lineStreamRW::lineStreamRW(std::iostream *stpa):
 	stp(stpa)
 {}
-const lineType& lineStreamReader::getNext(){
+const lineType& lineStreamRW::getNext(){
 	if(isLastLine){
 		DBGOUTLN("isLastLineフラグが立ち、えんｄ");
 		li.unavailable();
@@ -122,10 +122,10 @@ const lineType& lineStreamReader::getNext(){
 	isLastLine=isStreamEOS();
 	return li;
 }
-const lineType& lineStreamReader::getNow(){
+const lineType& lineStreamRW::getNow(){
 	return li;
 }
-void lineStreamReader::addNext(const std::string &s){
+void lineStreamRW::addNext(const std::string &s){
 	DBGOUTLN("addNext()は次の文字列を追加します: "<<s);
 	if(isFirstLine){
 		//DBGOUT(s<<std::flush);
@@ -137,14 +137,14 @@ void lineStreamReader::addNext(const std::string &s){
 	}
 }
 	
-void lineStreamReader::resetSt(){
+void lineStreamRW::resetSt(){
 	stp->clear();
 	stp->seekg(0,std::ios_base::beg);
 	//li.available();
 	isLastLine=isStreamEOS();
 	isFirstLine=true;
 }
-void lineStreamReader::gotoLine(int tag){
+void lineStreamRW::gotoLine(int tag){
 	DBGOUT(li.lineNum<<"から"<<tag);
 	if(tag<=li.lineNum){
 		resetBeforeRead();
@@ -160,30 +160,30 @@ void lineStreamReader::gotoLine(int tag){
 			return;
 		}
 		if(!(getNext().isAvailable())){
-			throw std::logic_error("目標行数が見つかりません @lineStreamReader::gotoLine");
+			throw std::logic_error("目標行数が見つかりません @lineStreamRW::gotoLine");
 		}
 	}
 }
 
-void lineFileReader::chkOpened(){
+void lineFileRW::chkOpened(){
 	if(!(*f))throw fileError(getSelfName()+"を開けない");
 }
-lineFileReader::lineFileReader(fs::path fname):
-	lineStreamReader(f=streamLocker.getP(fname)),path(fname)
+lineFileRW::lineFileRW(fs::path fname):
+	lineStreamRW(f=streamLocker.getP(fname)),path(fname)
 {
 	chkOpened();
 }
-void lineFileReader::reopenAs(std::ios_base::openmode mode){
+void lineFileRW::reopenAs(std::ios_base::openmode mode){
 	f->close();
 	f->open(path,mode);
 	chkOpened();
 }
-void lineFileReader::resetBeforeWrite(){
+void lineFileRW::resetBeforeWrite(){
 	resetSt();
 	delContent();
 }
 
-lineSeekReader::lineSeekReader(lineStreamReader &lordLLa):
+lineSeekReader::lineSeekReader(lineStreamRW &lordLLa):
 	lordLL(lordLLa)
 {}
 lineSeekReader::lineSeekReader(lineSeekReader &lsl):
@@ -213,8 +213,8 @@ void lineSeekReader::restoreMark(){
 	lordLL.gotoLine(markLineNum);
 }
 
-lineStringReader::lineStringReader(lineStreamReader &mother):
-	lineStreamReader(&ss)
+lineStringReader::lineStringReader(lineStreamRW &mother):
+	lineStreamRW(&ss)
 {
 	//https://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
 	//http://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
@@ -225,7 +225,7 @@ lineStringReader::lineStringReader(lineStreamReader &mother):
 }
 
 lineStringReader::lineStringReader(const std::string &s):
-	lineStreamReader(&ss),ss(s)
+	lineStreamRW(&ss),ss(s)
 {}
 void lineStringReader::resetBeforeWrite(){
 	resetSt();

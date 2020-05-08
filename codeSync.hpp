@@ -316,7 +316,7 @@ class lineRW:
 	public lineWriter
 {};
 
-class lineStreamReader:
+class lineStreamRW:
 	public lineRW
 {
 	//streamを行単位で読み書き
@@ -330,7 +330,7 @@ class lineStreamReader:
 	public:
 	std::streambuf* getRdbuf()const{return stp->rdbuf();}
 	int getLoadedLineNum()const{return li.lineNum;}
-	lineStreamReader(std::iostream*);
+	lineStreamRW(std::iostream*);
 	void gotoLine(int);
 	const lineType& getNext()override;
 	const lineType& getNow();
@@ -340,10 +340,10 @@ class lineStreamReader:
 	//void resetBeforeWrite()override{resetBeforeRW();}
 };
 
-inline bool lineStreamReader::isStreamEOS()const{
+inline bool lineStreamRW::isStreamEOS()const{
 	return stp->eof()||stp->fail();
 }
-class lineFileReader:public lineStreamReader{
+class lineFileRW:public lineStreamRW{
 	//fileを行単位で読み書き
 	private:
 	std::fstream *f;
@@ -351,25 +351,25 @@ class lineFileReader:public lineStreamReader{
 	void chkOpened();
 	std::string getSelfName() const {return "File \""+path.string()+"\"";}
 	public:
-	lineFileReader(fs::path);
+	lineFileRW(fs::path);
 	void reopenAs(std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);
 	void delContent();
 	void resetBeforeWrite()override;
 };
-inline void lineFileReader::delContent(){
+inline void lineFileRW::delContent(){
 	reopenAs(std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
 }
 
 class lineSeekReader:public lineReader{
-	//任意のlineStreamReaderに寄生し、その行の区間を使う(std::string_viewに近い思考)
+	//任意のlineStreamRWに寄生し、その行の区間を使う(std::string_viewに近い思考)
 	//だけど、現在使っていません
 	private:
 	const lineType emptyLi;
 	int startLineNum=0,endLineNum=0,markLineNum=0;
-	lineStreamReader &lordLL;
+	lineStreamRW &lordLL;
 	public:
-	lineStreamReader& getLordLL()const{return lordLL;}
-	lineSeekReader(lineStreamReader&);
+	lineStreamRW& getLordLL()const{return lordLL;}
+	lineSeekReader(lineStreamRW&);
 	lineSeekReader(lineSeekReader&);
 	const lineType& getNext()override;
 	void resetBeforeRead()override;
@@ -381,12 +381,12 @@ class lineSeekReader:public lineReader{
 	
 	//friend lineSeekReader;
 };
-class lineStringReader:public lineStreamReader{
+class lineStringReader:public lineStreamRW{
 	//stringstreamを行単位で読み書き
 	private:
 	std::stringstream ss;
 	public:
-	lineStringReader(lineStreamReader&);
+	lineStringReader(lineStreamRW&);
 	lineStringReader(const std::string&);
 	void resetBeforeWrite()override;
 	void print(){std::cout<<"csidStringReader-----\n"<<ss.str()<<std::endl;}
@@ -1001,7 +1001,6 @@ class targetDirFiles:noMovCopyable{
 	fs::path shapingTagDir(const fs::path&);
 	void addInternalCsid(const csidType&,const std::string&);
 	void addInternalCsidsIfDef();
-	//void sortf();
 	
 	const fs::path tagDir;
 	const std::vector<fs::path> tagExtensions;
@@ -1012,7 +1011,7 @@ class targetDirFiles:noMovCopyable{
 	
 	class aFile:noMovCopyable{
 		private:
-		lineFileReader fileRW;
+		lineFileRW fileRW;
 		const fs::directory_entry fsEntry;
 		const fs::file_time_type initTime;
 		const std::string relPathStr;
