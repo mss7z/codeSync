@@ -234,21 +234,55 @@ void lineStringReader::resetBeforeWrite(){
 }
 
 //////////////////////// csidType
-csidDictHash::csidDictHash():
-	hashTableEndP(hashTable+hashTableSize)
+template<typename T>
+csidDictHash<T>::csidDictHash(const T &nonea):
+	hashTableEndP(hashTable+hashTableSize),none(nonea)
 {
-	for(int *p=hashTable;p<hashTableEndP;p++){
-		*p=NONE;
+	for(T *p=hashTable;p<hashTableEndP;p++){
+		*p=none;
 	}
 	tableP=hashTable;
 }
-csidDictHash csidType::hash;
+csidDictHash<csidType::indexType> csidType::hash{dict.max_size()};
 
 std::vector<std::string> csidType::dict={""};
-const decltype(csidType::dict)::size_type csidType::emptyIndex=findSameElseAdd2Dict("");
+const csidType::indexType csidType::emptyIndex=findSame("");
 const csidType csidType::emptyCsid{};
-decltype(csidType::dict)::size_type csidType::findSameElseAdd2Dict(const std::string &s){
+csidType::indexType csidType::findSame(const std::string &s){
+	indexType cdindex=hash.getCandidate(s);
+	while(true){
+		if(cdindex==hash.none){
+			DBGOUTLN("hash=NONE!");
+			return emptyIndex;
+		}else if(dict[cdindex]==s){
+			DBGOUTLN("hash=FOUND!!!! ハッシュに登録されていました");
+			return cdindex;
+		}else{
+			DBGOUTLN("hash=BAD ハッシュが衝突しました");
+			cdindex=hash.nextCandidate();
+		}
+		if(hash.isFull()){
+			DBGOUTLN("hash=FULL! ハッシュが満杯です");//万が一ハッシュがいっぱいになったら頑張ってひとつずつ探す
+			const std::vector<std::string>::const_iterator begin=dict.begin(),end=dict.end();
+			const std::vector<std::string>::const_iterator findItr=std::find(begin,end,s);
+			if(findItr==end){
+				return emptyIndex;
+			}
+			return std::distance(begin,findItr);
+		}
+	}
+}
+csidType::indexType csidType::findSameElseAdd2Dict(const std::string &s){
 	DBGOUTLN("search "<<s);
+	if(const indexType cdindex=findSame(s);cdindex==emptyIndex){
+		const indexType newIndex=dict.size();
+		hash.setCandidate(newIndex);
+		dict.push_back(s);
+		return newIndex;
+	}else{
+		return cdindex;
+	}
+}/*
 	int cdindex=hash.getCandidate(s);
 	while(true){
 		if(cdindex==csidDictHash::NONE){
@@ -276,7 +310,8 @@ decltype(csidType::dict)::size_type csidType::findSameElseAdd2Dict(const std::st
 			}
 		}
 	}
-}
+}*/
+
 csidType::csidType():
 	index(emptyIndex){}
 csidType::csidType(const std::string &s):

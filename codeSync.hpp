@@ -395,25 +395,30 @@ class lineStringReader:public lineStreamRW{
 };
 
 //////////////////////// csidType
+template<typename T>
 class csidDictHash{
 	//csidTypeの中で検索を早くするために使う
 	private:
 	//13の意味についてはcsidDictHash::hashFuncを参照
-	constexpr static int hashTableSize=0b1<<13;
-	constexpr static int hashTableMask=hashTableSize-1;
-	int hashTable[hashTableSize];
-	const int *hashTableEndP;
-	bool isFullTable=false;
+	constexpr static int hashTableMainSize=0b1<<13;
+	constexpr static int hashTableMask=hashTableMainSize-1;
+	constexpr static int hashTableSize=hashTableMainSize+20;
+	T hashTable[hashTableSize];
+	const T *hashTableEndP;
+	bool isFullTablePreFlag=false,isFullTable=false;
 	int hashFunc(const std::string&);
-	int *tableP;
+	T *tableP;
 	public:
-	constexpr static int NONE=-1,FULL=-2;
-	csidDictHash();
-	int getCandidate(const std::string&);
-	int nextCandidate();
-	void setCandidate(const int);
+	//constexpr static T NONE=-1,FULL=-2;
+	const T none;
+	csidDictHash(const T&);
+	T getCandidate(const std::string&);
+	T nextCandidate();
+	void setCandidate(const T);
+	bool isFull()const{return isFullTable;}
 };
-inline int csidDictHash::hashFunc(const std::string &s){
+template<typename T>
+inline int csidDictHash<T>::hashFunc(const std::string &s){
 	//hashTableMaskでマスクして得られる領域(計13bit)
 	//0b 0000              000 0000                00
 	//   ^~~~              ^~~~~~~~                ^~
@@ -421,22 +426,26 @@ inline int csidDictHash::hashFunc(const std::string &s){
 	assert((((s.size()&0xF)<<9)|((static_cast<int>(*s.c_str())&0x7F)<<2))<hashTableSize);
 	return (((s.size()&0xF)<<9)|((static_cast<int>(*s.c_str())&0x7F)<<2))&hashTableMask;
 }
-inline int csidDictHash::getCandidate(const std::string &s){
+template<typename T>
+inline T csidDictHash<T>::getCandidate(const std::string &s){
+	//isFullTablePreFlag=false;
 	tableP=hashTable+hashFunc(s);
 	return *tableP;
 }
-inline int csidDictHash::nextCandidate(){
+template<typename T>
+inline T csidDictHash<T>::nextCandidate(){
 	tableP++;
 	if(!(tableP<hashTableEndP)){
-		if(isFullTable){
-			return FULL;
+		if(isFullTablePreFlag){
+			isFullTable=true;
 		}
-		isFullTable=true;
+		isFullTablePreFlag=true;
 		tableP=hashTable;
 	}
 	return *tableP;
 }
-inline void csidDictHash::setCandidate(const int v){
+template<typename T>
+inline void csidDictHash<T>::setCandidate(const T v){
 	*tableP=v;
 }
 	
@@ -447,13 +456,15 @@ class csidType{
 	public:
 	using indexType=decltype(dict)::size_type;
 	private:
-	static csidDictHash hash;
+	static csidDictHash<indexType> hash;
+	static indexType findSame(const std::string&);
 	static indexType findSameElseAdd2Dict(const std::string&);
 	static const indexType emptyIndex;
 	indexType index;
 	public:
 	static const csidType emptyCsid;
 	static indexType getCsidTotal(){return dict.size();}
+	
 	indexType getIndex()const{return index;}
 	csidType();
 	csidType(const std::string&);
@@ -616,13 +627,13 @@ class csidLineReader:public csidReader4Read{
 	private:
 	constexpr static const char csidTag[]="#csid ";
 	constexpr static const int csidTagSize=sizeof(csidTag)-1;//スペース分を引く
-	std::stringstream csidSeparaterSS;
+	std::istringstream csidSeparaterSS;
 	[[nodiscard]] bool isPracticableNextLine();
 	[[nodiscard]] bool isPracticableCsidSeparaterSS();
 	[[nodiscard]] status getCmdFromCsidSeparaterSS();
 	[[nodiscard]] status getCmdSwitchWhenNone(const std::string &cmd)noexcept;
 	[[nodiscard]] status getCmdSwitchWhenEnable(const std::string &cmd)noexcept;
-	csidNamespace getCsidNamespaceSwitch(const std::string &cns)noexcept;
+	[[nodiscard]] csidNamespace getCsidNamespaceSwitch(const std::string &cns)noexcept;
 	void loadCsidFromCsidSeparaterSS();
 	csidType csid;
 	lineType line;
