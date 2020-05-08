@@ -968,7 +968,7 @@ class tableLineReader:virtual public tableLineBase{
 	tableLineReader(const csidType&,csidNamespaceTable&,lineReader&,ITA&&);
 };
 inline doubleInfo tableLineReader::getDoubleInfo(){
-	return doubleInfo(info,infoTypeCast(line.getNow()));
+	return doubleInfo(info,static_cast<infoType>(line.getNow()));
 }
 class tableLineWriter:virtual public tableLineBase{
 	//tableからlineWriterにデータを書き込む
