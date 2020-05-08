@@ -8,7 +8,7 @@ void targetDirFiles::addInternalCsidsIfDef(){
 =================================================================\n\
    ##  ##    This document was written with Code Sync.\n\
   ##  ##     \n\
- ##  ###### ## ####   Generated time:"+timeLib{ch::system_clock::now()}.getStr()+"\n\
+ ##  ###### ## ####   Generated time: "+timeLib{ch::system_clock::now()}.getStr()+"\n\
   ##    ##  ## #  ##\n\
    ##  ##   ## ####\n\
 ================================================================="
@@ -20,7 +20,7 @@ void targetDirFiles::addInternalCsidsIfDef(){
 =================================================================\n\
    ##  ##    Code Syncによって同期されました.\n\
   ##  ##     \n\
- ##  ###### ## ####   生成時間:"+timeLib{ch::system_clock::now()}.getStr()+"\n\
+ ##  ###### ## ####   生成時間: "+timeLib{ch::system_clock::now()}.getStr()+"\n\
   ##    ##  ## #  ##\n\
    ##  ##   ## ####\n\
 ================================================================="

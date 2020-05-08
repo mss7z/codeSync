@@ -10,8 +10,6 @@ int main (int argc,char *argv[]) {
 	checkDebugMode();
 	//std::cout<<"hello world!"<<std::endl;
 	DBGOUT("hello monkey\n");
-	//instantCFLtest("D:\\00_C_Cpp_Program\\codeShare\\tests\\cflDreams.txtccc");
-	//return 0;
 	try{
 		fs::path tagPath;
 		if(argc==2){
@@ -21,7 +19,6 @@ int main (int argc,char *argv[]) {
 		}else{
 			throw std::runtime_error("引数が不正");
 		}
-		//codeShareMain("D:\\00_C_Cpp_Program\\codeShare\\tests\\");
 		codeShareMain(tagPath);
 		std::cout<<"hello world!"<<std::endl;
 		std::exit(EXIT_SUCCESS);
@@ -67,20 +64,9 @@ void waitForEnter()noexcept{
 }
 void codeShareMain(const std::filesystem::path &taga){
 	using namespace codeSync;
-	targetDirFiles dir(taga,{{".txt"}});
-	//targetDirFiles dir("tests",{{".txt"},{".exe"}});
-	/*dir.tagDir="tests\\";
-	//dir.tagDir=".";
-	dir.tagExtensions={{".txt"},{".exe"}};*/
+	targetDirFiles dir(taga,{{".txt",".html",".htm",".css"}});
 	dir.read();
 	dir.backup();
-	/*for(const auto& i : dir.files){
-		std::cout<<i.fsEntry.path()<<std::endl;
-		
-		//instantCFLtest(i.fsEntry.path());
-	}*/
-	
-	//instantCsidTableViewer(dir.table);
 	DBGDO(dir.printTable());
 	
 	//ここら辺の処理、洗練されてないから未来の自分は何とかしろ
