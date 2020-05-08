@@ -293,12 +293,8 @@ csidType csidType::getIfFind(const std::string &s){
 	}
 }
 
-csidType::csidType():
-	index(emptyIndex){}
 csidType::csidType(const std::string &s):
 	index(findSameElseAdd2Dict(s)){}
-csidType::csidType(const csidType &v):
-	index(v.getIndex()){}
 	
 std::ostream& operator<<(std::ostream &stream,const csidType &v){
 	stream<<v.getStr();
@@ -314,7 +310,7 @@ csidType::operator std::string()const{
 	return getStr();
 }
 csidType::operator csidType::indexType()const{
-	return static_cast<csidType::indexType>(getIndex());
+	return getIndex();
 }
 
 template<typename T>
@@ -1137,21 +1133,6 @@ csidType targetDirFiles::getIfThereIsCsidInGlobalTable(const std::string &s){
 void targetDirFiles::addInternalCsid(const csidType &csid,const std::string &str){
 	lineStringReader lineRdr{str};
 	tableLineReader{csid,table,lineRdr,stringInfo("INTERNAL "+csid.getStrCsid())}.read();
-}
-	
-void targetDirFiles::addInternalCsidsIfDef(){
-	if(const csidType csid=getIfThereIsCsidInGlobalTable("__codeSync_selfIntroduction");csid!=csidType::emptyCsid){
-		const std::string s{"\
-====================================================\n\
-   ##  ##    This document was written with Code Sync.\n\
-  ##  ##     \n\
- ##  ###### ## ####   Generated time:"+timeLib{ch::system_clock::now()}.getStr()+"\n\
-  ##    ##  ## #  ##\n\
-   ##  ##   ## ####\n\
-===================================================="
-		};
-		addInternalCsid(csid,s);
-	}
 }
 
 targetDirFiles::targetDirFiles(const fs::path &tagDira,const std::vector<fs::path> &tagExtensionsA):

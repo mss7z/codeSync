@@ -468,6 +468,7 @@ class csidType{
 	csidType();
 	csidType(const std::string&);
 	csidType(const csidType&);
+	csidType(csidType&&);
 	std::string& getStr()const;
 	std::string getStrCsid()const;
 	std::string getStrQuote()const;
@@ -476,6 +477,7 @@ class csidType{
 	//explicit
 	csidType& operator=(const std::string&);
 	csidType& operator=(const csidType&);
+	csidType& operator=(csidType&&);
 	friend std::ostream& operator<<(std::ostream&,const csidType&);
 	friend std::istream& operator>>(std::istream&,csidType&);
 	operator std::string()const;
@@ -494,6 +496,14 @@ inline std::string csidType::getStrCsid()const{
 inline std::string csidType::getStrQuote()const{
 	return std::move('\"'+dict[index]+'\"');
 }
+
+
+inline csidType::csidType():
+	index(emptyIndex){}
+inline csidType::csidType(const csidType &v):
+	index(v.getIndex()){}
+inline csidType::csidType(csidType &&v):
+	index(std::move(v.index)){}
 inline void csidType::clear(){
 	index=emptyIndex;
 }
@@ -506,6 +516,10 @@ inline csidType& csidType::operator=(const std::string &s){
 }
 inline csidType& csidType::operator=(const csidType &v){
 	index=v.getIndex();
+	return *this;
+}
+inline csidType& csidType::operator=(csidType &&v){
+	index=std::move(v.index);
 	return *this;
 }
 inline bool csidType::operator==(const csidType &v)const{
