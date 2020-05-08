@@ -978,8 +978,9 @@ csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 			tagTable=&table(mother);
 		}else if(cns==cr::NAME){
 			tagTable=&table(name);
+		}else{
+			throw std::logic_error("予期しないcsidNamespace @csidContentDetail tableLineReader::readACsid");
 		}
-		
 		if(sts==cr::START){
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
 			csidContentDetail content{readACsid(reader)};
@@ -989,7 +990,7 @@ csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
 			tagTable->line.addc(csid,csidContentLineWriter{std::string(reader.getLineMain())},infoTypeGen<doubleInfo>(info,infoTypeCast(lit)),opt);
 		}else{
-			throw std::logic_error("予期しないstatus @targetDirFiles::aFile::loadACsid");
+			throw std::logic_error("予期しないstatus @csidContentDetail tableLineReader::readACsid");
 		}
 		name=initName;
 	}
