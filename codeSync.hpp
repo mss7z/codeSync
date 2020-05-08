@@ -938,7 +938,11 @@ inline const std::string tableCsids<CC>::aCsid::getSelfName() const{
 }
 template<typename CC>
 inline const CC& tableCsids<CC>::getWriteContent(const csidType &csida)const{
-	return csids[csidsFinder.find(csida)].getWriteContent();
+	if(int index=csidsFinder.find(csida);index!=FINDER_NONE){
+		return csids[index].getWriteContent();
+	}else{
+		return emptyContent;
+	}
 }
 struct tablesType:noMovCopyable{
 	tableCsids<csidContentDetail> part{"part"};
