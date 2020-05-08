@@ -1124,13 +1124,23 @@ fs::path targetDirFiles::shapingTagDir(const fs::path &tag){
 		return ans;
 	}
 }
+csidType targetDirFiles::getIfThereIsCsidInGlobalTable(const std::string &s){
+	csidType cdCsid=csidType::getIfFind(s);
+	if(cdCsid==csidType::emptyCsid){
+		return cdCsid;
+	}else if(table(csidNamespaceTable::global).part.isThereCsid(cdCsid)){
+		return cdCsid;
+	}
+	return csidType::emptyCsid;
+}
+
 void targetDirFiles::addInternalCsid(const csidType &csid,const std::string &str){
 	lineStringReader lineRdr{str};
 	tableLineReader{csid,table,lineRdr,stringInfo("INTERNAL "+csid.getStrCsid())}.read();
 }
 	
 void targetDirFiles::addInternalCsidsIfDef(){
-	if(csidType csid{"__codeSync_selfIntroduction"};table(csidNamespaceTable::global).part.isThereCsid(csid)){
+	if(const csidType csid=getIfThereIsCsidInGlobalTable("__codeSync_selfIntroduction");csid!=csidType::emptyCsid){
 		const std::string s{"\
 ====================================================\n\
    ##  ##    This document was written with Code Sync.\n\

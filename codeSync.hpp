@@ -482,6 +482,7 @@ class csidType{
 	operator indexType()const;
 	operator int()const=delete;
 	bool operator==(const csidType&)const;
+	bool operator!=(const csidType&)const;
 	friend std::string operator+(const std::string&,const csidType&);
 };
 inline std::string& csidType::getStr()const{
@@ -509,6 +510,9 @@ inline csidType& csidType::operator=(const csidType &v){
 }
 inline bool csidType::operator==(const csidType &v)const{
 	return index==v.getIndex();
+}
+inline bool csidType::operator!=(const csidType &v)const{
+	return index!=v.getIndex();
 }
 inline std::string operator+(const std::string &s,const csidType &v){
 	return std::move(s+v.getStr());
@@ -1013,6 +1017,7 @@ class targetDirFiles:noMovCopyable{
 	bool isTagExtension(const fs::path);
 	void addf(const fs::directory_entry&);
 	fs::path shapingTagDir(const fs::path&);
+	csidType getIfThereIsCsidInGlobalTable(const std::string&);
 	void addInternalCsid(const csidType&,const std::string&);
 	void addInternalCsidsIfDef();
 	
