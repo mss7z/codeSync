@@ -983,11 +983,11 @@ csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 		if(sts==cr::START){
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
 			csidContentDetail content{readACsid(reader)};
-			tagTable->part.addc(csid,content,infoTypeCast(std::move(getDoubleInfo())),opt);
+			tagTable->part.addc(csid,content,infoTypeGen<doubleInfo>(info,infoTypeCast(lit)),opt);
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
 		}else if(sts==cr::LINE){
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
-			tagTable->line.addc(csid,csidContentLineWriter{std::string(reader.getLineMain())},infoTypeCast(std::move(getDoubleInfo())),opt);
+			tagTable->line.addc(csid,csidContentLineWriter{std::string(reader.getLineMain())},infoTypeGen<doubleInfo>(info,infoTypeCast(lit)),opt);
 		}else{
 			throw std::logic_error("予期しないstatus @targetDirFiles::aFile::loadACsid");
 		}
