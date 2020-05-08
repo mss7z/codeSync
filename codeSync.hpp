@@ -177,7 +177,7 @@ inline std::string infoType::getStr()const{
 }
 
 using infoTypeCastable=infoTypeBase;
-class [[nodiscard]] fileInfo:public infoTypeCastable{
+class fileInfo:public infoTypeCastable{
 	//その名の通りファイルの情報
 	private:
 	struct fileInfoBody{
@@ -221,7 +221,7 @@ inline std::string fileInfo::getStr()const{
 	return "@ "+getStrNoAt();
 }
 
-struct [[nodiscard]] lineInfo:public infoTypeCastable{
+struct lineInfo:public infoTypeCastable{
 	//その名の通り行番号とその内容の情報
 	int lineNum;
 	std::string lineStr;
@@ -253,7 +253,7 @@ struct lineType:public lineInfo{
 	bool isAvailable()const{return isAvailableVal;}
 	void unavailable(){isAvailableVal=false;}
 };
-class [[nodiscard]] doubleInfo:public infoTypeCastable{
+class doubleInfo:public infoTypeCastable{
 	//二つの情報を入れて改行区切りで表示
 	private:
 	const infoType mother;
@@ -267,7 +267,7 @@ inline std::string doubleInfo::getStr()const{
 	return mother.getStr()+"\n"+child.getStr();
 }
 
-class [[nodiscard]] stringInfo:public infoTypeCastable{
+class stringInfo:public infoTypeCastable{
 	private:
 	const std::string s;
 	public:
@@ -276,7 +276,7 @@ class [[nodiscard]] stringInfo:public infoTypeCastable{
 };
 inline stringInfo::stringInfo(const std::string &sa):
 	s(sa){}
-inline std::string stringInfo::getStr()const{DBGOUTLN("milebb");
+inline std::string stringInfo::getStr()const{
 	return s;
 }
 
