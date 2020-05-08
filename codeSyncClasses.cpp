@@ -1120,14 +1120,14 @@ fs::path targetDirFiles::shapingTagDir(const fs::path &tag){
 		return ans;
 	}
 }
-csidType targetDirFiles::getIfThereIsCsidInGlobalTable(const std::string &s){
-	csidType cdCsid=csidType::getIfFind(s);
-	if(cdCsid==csidType::emptyCsid){
-		return cdCsid;
-	}else if(table(csidNamespaceTable::global).part.isThereCsid(cdCsid)){
-		return cdCsid;
+bool targetDirFiles::isThereCsidInGlobalTable(const std::string &s){
+	cdInternalCsid=csidType::getIfFind(s);
+	if(cdInternalCsid==csidType::emptyCsid){
+		return false;
+	}else if(table(csidNamespaceTable::global).part.isThereCsid(cdInternalCsid)){
+		return true;
 	}
-	return csidType::emptyCsid;
+	return false;
 }
 
 void targetDirFiles::addInternalCsid(const csidType &csid,const std::string &str){
@@ -1148,8 +1148,6 @@ targetDirFiles::aFile::aFile(csidNamespaceTable &tablea,const fs::directory_entr
 	selfCsid("__file_"+getPathStr()),
 	tlrw(selfCsid,tablea,fileRW,info)
 {}
-
-
 
 void targetDirFiles::read(){
 	fs::recursive_directory_iterator itr(tagDir);

@@ -143,6 +143,7 @@ class timeLib {
 	friend std::ostream& operator<<(std::ostream&,const timeLib<TPA>&);
 };
 using ftimeLib = timeLib<fs::file_time_type>;
+template class timeLib<ch::system_clock::time_point>;
 
 //////////////////////// infoType
 class infoTypeBase{
@@ -1031,7 +1032,9 @@ class targetDirFiles:noMovCopyable{
 	bool isTagExtension(const fs::path);
 	void addf(const fs::directory_entry&);
 	fs::path shapingTagDir(const fs::path&);
-	csidType getIfThereIsCsidInGlobalTable(const std::string&);
+	
+	csidType cdInternalCsid;
+	bool isThereCsidInGlobalTable(const std::string&);
 	void addInternalCsid(const csidType&,const std::string&);
 	void addInternalCsidsIfDef();
 	
