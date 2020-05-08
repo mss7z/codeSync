@@ -365,6 +365,12 @@ csidLineReader::status csidLineReader::getCmdFromCsidSeparaterSS(){
 		}
 		return NONEC;
 	}else{
+		cns=getCsidNamespaceSwitch(cmdStr);
+		if(cns==UNKNOWN_CNS){
+			cns=GLOBAL;
+		}else{
+			csidSeparaterSS>>cmdStr;
+		}
 		const status cmd=getCmdSwitchWhenEnable(cmdStr);
 		if(cmd==NONE_START){
 			isNoneCmdPart=true;
@@ -415,6 +421,17 @@ csidLineReader::status csidLineReader::getCmdSwitchWhenEnable(const std::string 
 		return UNKNOWN_STS;
 	}
 }
+csidLineReader::csidNamespace csidLineReader::getCsidNamespaceSwitch(const std::string &cns)noexcept{
+	if(cns=="file"){
+		return FILE;
+	}else if(cns=="name"){
+		return NAME;
+	}else if(cns=="global"){
+		return GLOBAL;
+	}else{
+		return UNKNOWN_CNS;
+	}
+}
 
 void csidLineReader::loadCsidFromCsidSeparaterSS(){
 	csid.clear();
@@ -449,7 +466,7 @@ csidLineReader::csidLineReader(lineReader &r):
 {}
 
 analyzedLine csidLineReader::getAnalyzedLine(){
-	return analyzedLine{cmd,csid,opt};
+	return analyzedLine{cmd,csid,opt,cns};
 }
 
 void csidLineReader::resetBeforeNextLine(){
@@ -587,8 +604,8 @@ void csidContentDetailWriter::addLine(const std::string &s,const analyzedLine al
 }
 
 
-const analyzedLine csidContentDetailReader::eosAnalyzed{EOS,csidType::emptyCsid,UNKNOWN_OPT};
-const analyzedLine csidContentDetailReader::ordinaryAnalyzed{ORDINARILY,csidType::emptyCsid,UNKNOWN_OPT};
+const analyzedLine csidContentDetailReader::eosAnalyzed{EOS,csidType::emptyCsid,UNKNOWN_OPT,UNKNOWN_CNS};
+const analyzedLine csidContentDetailReader::ordinaryAnalyzed{ORDINARILY,csidType::emptyCsid,UNKNOWN_OPT,UNKNOWN_CNS};
 const std::string csidContentDetailReader::emptyStr{};
 
 csidContentDetailReader::csidContentDetailReader(const csidContentDetail &lordCCDa):
@@ -641,6 +658,10 @@ csidCsidContentDetailReader::status csidCsidContentDetailReader::nextLine(){
 	lineStrP=&refLineStr;
 	analyzedP=&refAnalyzed;
 	return refAnalyzed.sts;
+}
+csidCsidContentDetailReader::csidNamespace csidCsidContentDetailReader::getCsidNamespace(){
+	assert(analyzedP!=nullptr);
+	return analyzedP->cns;
 }
 std::string_view csidCsidContentDetailReader::getLineIndent(){
 	std::string_view s{getLineStr()};
@@ -855,7 +876,25 @@ void tablesType::print(){
 	part.print();
 	line.print();
 }
-
+tablesType& csidNamespaceTable::refTable(const csidType &csid){
+	if(tablesType *p=ttableFinder.find(csid);p==FINDER_NULL){
+		tablesType &ref=ttable.emplace_back();
+		ttableFinder.set(csid,&ref);
+		return ref;
+	}else{
+		return *p;
+	}
+}
+void csidNamespaceTable::selectWritevs(){
+	for(auto &i:ttable){
+		i.selectWritevs();
+	}
+}
+void csidNamespaceTable::print(){
+	for(auto &i:ttable){
+		i.print();
+	}
+}
 //////////////////////// filesBackupper
 fs::path filesBackupper::toCurrentGenerator(fs::path fromabs){
 	assert(fromabs.filename()!="");
@@ -898,6 +937,8 @@ void filesBackupper::backup(const fs::path &backupFilea){
 
 
 //////////////////////// table <-> lineReader
+const csidType tableLineBase::globalCsid=csidType::emptyCsid;
+
 tableCsidsKeyword::option tableLineReader::optConv(csidLineReaderRapChecker::option opta){
 	using cr=csidLineReaderRapChecker;
 	using to=tableCsidsKeyword;
@@ -914,7 +955,8 @@ tableCsidsKeyword::option tableLineReader::optConv(csidLineReaderRapChecker::opt
 
 csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 	csidContentDetailWriter inContent;
-	using cr=csidLineReaderRapChecker;
+	const csidType initName=name;
+	using cr=csidReader4Read;
 	while(true){
 		const cr::status sts=reader.nextLine();
 		if(sts==cr::ORDINARILY){
@@ -927,17 +969,29 @@ csidContentDetail tableLineReader::readACsid(csidReader4Read &reader){
 		const tableCsidsKeyword::option opt=optConv(reader.getOpt());
 		const lineInfo lit=reader.getLineInfo();
 		const csidType csid=reader.getCsid();
+		const cr::csidNamespace cns=reader.getCsidNamespace();
+		tablesType *tagTable;
+		if(cns==cr::GLOBAL){
+			tagTable=&table(globalCsid);
+			name=csid;
+		}else if(cns==cr::FILE){
+			tagTable=&table(mother);
+		}else if(cns==cr::NAME){
+			tagTable=&table(name);
+		}
+		
 		if(sts==cr::START){
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
 			csidContentDetail content{readACsid(reader)};
-			table.part.addc(csid,content,infoTypeCast(std::move(getDoubleInfo())),opt);
+			tagTable->part.addc(csid,content,infoTypeCast(std::move(getDoubleInfo())),opt);
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
 		}else if(sts==cr::LINE){
 			inContent.addLine(reader.getLineStr(),reader.getAnalyzedLine());
-			table.line.addc(csid,csidContentLineWriter{std::string(reader.getLineMain())},infoTypeCast(std::move(getDoubleInfo())),opt);
+			tagTable->line.addc(csid,csidContentLineWriter{std::string(reader.getLineMain())},infoTypeCast(std::move(getDoubleInfo())),opt);
 		}else{
 			throw std::logic_error("予期しないstatus @targetDirFiles::aFile::loadACsid");
 		}
+		name=initName;
 	}
 	return std::move(inContent);//NRVOどこ行った？std::moveをつけないと普通にコピーされるのですが
 }
@@ -951,20 +1005,21 @@ void tableLineReader::read(){
 		reader.resetBeforeNextLine();
 		DBGOUTLN("targetDirFiles::aFile::loadToからloadACsidをコール");
 		csidContentDetail content{readACsid(reader)};
-		table.part.addc(csid,content,info,opt);
+		table(globalCsid).part.addc(mother,content,info,opt);
 	}catch(const fileError &s){
 		em.err<<s<<getDoubleInfo().getStr()<<std::endl;
 	}
 }
-tableLineReader::tableLineReader(const csidType &csida,tablesType &tablea,lineReader &linea,const infoTypeCastable &infoa):
-	csid(csida),table(tablea),line(linea),info(infoa){}
+tableLineReader::tableLineReader(const csidType &csida,csidNamespaceTable &tablea,lineReader &linea,const infoTypeCastable &infoa):
+	mother(csida),name(csida),table(tablea),line(linea),info(infoa){}
 template<class ITA>
-tableLineReader::tableLineReader(const csidType &csida,tablesType &tablea,lineReader &linea,ITA &&infoa):
-	csid(csida),table(tablea),line(linea),info(infoTypeCast(infoa)){}
+tableLineReader::tableLineReader(const csidType &csida,csidNamespaceTable &tablea,lineReader &linea,ITA &&infoa):
+	mother(csida),name(csida),table(tablea),line(linea),info(infoTypeCast(infoa)){}
 
 void tableLineWriter::writeACsid(csidReader4Write &reader){
 	reader.resetBeforeNextLine();
-	using cr=csidLineReader;
+	const csidType initName=name;
+	using cr=csidReader4Write;
 	while(true){
 		const cr::status sts=reader.nextLine();
 		if(sts==cr::ORDINARILY || sts==cr::END){
@@ -974,25 +1029,37 @@ void tableLineWriter::writeACsid(csidReader4Write &reader){
 			break;
 		}
 		const csidType csid=reader.getCsid();
+		const cr::csidNamespace cns=reader.getCsidNamespace();
+		const tablesType *tagTable;
+		if(cns==cr::GLOBAL){
+			tagTable=&table(globalCsid);
+			name=csid;
+		}else if(cns==cr::FILE){
+			tagTable=&table(mother);
+		}else if(cns==cr::NAME){
+			tagTable=&table(name);
+		}
 		if(sts==cr::START){
 			line.addNext(reader.getLineStr());
-			const csidContentDetail &writeContent=table.part.getWriteContent(csid);
+			const csidContentDetail &writeContent=tagTable->part.getWriteContent(csid);
 			if(!writeContent.isEmpty()){
 				csidContentDetailReader csidDetailRdr{writeContent};
 				csidCsidContentDetailReader csidRdr{csidDetailRdr};
 				writeACsid(csidRdr);
 			}
 		}else if(sts==cr::LINE){
-			line.addNext(std::string(reader.getLineIndent())+csidContentLineReader{table.line.getWriteContent(csid)}.getStr());
+			line.addNext(std::string(reader.getLineIndent())+csidContentLineReader{tagTable->line.getWriteContent(csid)}.getStr());
 		}else{
 			throw std::logic_error("予期しないstatus @targetDirFiles::aFile::loadACsid");
 		}
+		name=initName;
 	}
+	
 }
 void tableLineWriter::write(){
 	try{
 		line.resetBeforeWrite();
-		const csidContentDetail &writeContent=table.part.getWriteContent(csid);
+		const csidContentDetail &writeContent=table(globalCsid).part.getWriteContent(mother);
 		if(writeContent.isEmpty()){
 			throw std::logic_error("書き込み時に初期のファイルのcsidContentが空白");
 		}
@@ -1003,16 +1070,17 @@ void tableLineWriter::write(){
 		throw std::logic_error("内部文章の解析中に次の問題が発生しました\n"+s.getStr());
 	}
 }
-tableLineWriter::tableLineWriter(const csidType &csida,const tablesType &tablea,lineWriter &linea):
-	csid(csida),table(tablea),line(linea){}
+tableLineWriter::tableLineWriter(const csidType &csida,csidNamespaceTable &tablea,lineWriter &linea):
+	mother(csida),name(csida),table(tablea),line(linea){}
 
-tableLineRW::tableLineRW(const csidType &csida,tablesType &tablea,lineRW &linea,const infoTypeCastable &infoa):
+tableLineRW::tableLineRW(const csidType &csida,csidNamespaceTable &tablea,lineRW &linea,const infoTypeCastable &infoa):
 	tableLineReader(csida,tablea,linea,infoa),
 	tableLineWriter(csida,tablea,linea)
 {}
 
 
 //////////////////////// targetDirFiles
+const csidType targetDirFiles::globalCsid=csidType::emptyCsid;
 bool targetDirFiles::isTagExtension(const fs::path ext){
 	for(const auto& i : tagExtensions){
 		if(ext==i)return true;
@@ -1044,7 +1112,7 @@ void targetDirFiles::addInternalCsid(const csidType &csid,const std::string &str
 }
 	
 void targetDirFiles::addInternalCsidsIfDef(){
-	if(csidType csid{"__codeSync_selfIntroduction"};table.part.isThereCsid(csid)){
+	if(csidType csid{"__codeSync_selfIntroduction"};table(globalCsid).part.isThereCsid(csid)){
 		const std::string s{"\
 ====================================================\n\
    ##  ##    This document was written with Code Sync.\n\
@@ -1062,7 +1130,7 @@ targetDirFiles::targetDirFiles(const fs::path &tagDira,const std::vector<fs::pat
 	tagDir(shapingTagDir(tagDira)),tagExtensions(tagExtensionsA),backupper(tagDir)
 {}
 
-targetDirFiles::aFile::aFile(tablesType &tablea,const fs::directory_entry &fsEntryA,const fs::path &tagDira):
+targetDirFiles::aFile::aFile(csidNamespaceTable &tablea,const fs::directory_entry &fsEntryA,const fs::path &tagDira):
 	fileRW(fsEntryA.path()),
 	fsEntry(fsEntryA),
 	initTime(fsEntry.last_write_time()),

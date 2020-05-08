@@ -571,16 +571,18 @@ using flexibleCsidIsFinder=csidIsFinder<flexibleCsidFinder<bool>>;
 struct csidKeyword{
 	enum status{ORDINARILY,START,LINE,END,NONE_START,NONEC,EGG,NONE_END,EOS,UNKNOWN_STS};
 	enum option{NONE,MASTER,UNMASTER,UNKNOWN_OPT};
+	enum csidNamespace{GLOBAL,NAME,FILE,UNKNOWN_CNS};
 };
 
 struct analyzedLine:public csidKeyword{
 	status sts;
 	csidType csid;
 	option opt;
-	analyzedLine(const status stsa,const csidType &csida,const option opta):
-		sts(stsa),csid(csida),opt(opta){}
+	csidNamespace cns;
+	analyzedLine(const status stsa,const csidType &csida,const option opta,const csidNamespace cnsa):
+		sts(stsa),csid(csida),opt(opta),cns(cnsa){}
 	analyzedLine():
-		sts(UNKNOWN_STS),csid(csidType::emptyCsid),opt(UNKNOWN_OPT){}
+		sts(UNKNOWN_STS),csid(csidType::emptyCsid),opt(UNKNOWN_OPT),cns(UNKNOWN_CNS){}
 };
 
 class csidReaderBase:public csidKeyword{
@@ -590,6 +592,7 @@ class csidReaderBase:public csidKeyword{
 	
 	virtual void resetBeforeNextLine()=0;
 	virtual status nextLine()=0;
+	virtual csidNamespace getCsidNamespace()=0;
 	virtual ~csidReaderBase()=default;
 };
 class csidReader4Read:virtual public csidReaderBase{
@@ -617,10 +620,12 @@ class csidLineReader:public csidReader4Read{
 	[[nodiscard]] status getCmdFromCsidSeparaterSS();
 	[[nodiscard]] status getCmdSwitchWhenNone(const std::string &cmd)noexcept;
 	[[nodiscard]] status getCmdSwitchWhenEnable(const std::string &cmd)noexcept;
+	csidNamespace getCsidNamespaceSwitch(const std::string &cns)noexcept;
 	void loadCsidFromCsidSeparaterSS();
 	csidType csid;
 	lineType line;
 	status cmd;
+	csidNamespace cns;
 	option opt=NONE;
 	lineReader *const ll;
 	bool isNoneCmdPart=false;
@@ -634,6 +639,7 @@ class csidLineReader:public csidReader4Read{
 	analyzedLine getAnalyzedLine()override;
 	
 	option getOpt()override{return opt;}
+	csidNamespace getCsidNamespace()override{return cns;}
 	int getLineNum(){return line.lineNum;}
 	void resetBeforeNextLine()override;
 	status nextLine()override;
@@ -643,7 +649,6 @@ class csidLineReader:public csidReader4Read{
 	csidLineReader& operator=(const csidLineReader&)=delete;
 	csidLineReader& operator=(csidLineReader&&)=delete;
 };
-
 inline const lineInfo& csidLineReader::getLineInfo(){
 	return line;
 }
@@ -828,6 +833,7 @@ class csidCsidContentDetailReader:
 	
 	void resetBeforeNextLine()override;
 	status nextLine()override;
+	csidNamespace getCsidNamespace()override;
 	std::string_view getLineIndent()override;
 	
 	csidCsidContentDetailReader& operator=(const csidCsidContentDetailReader&)=delete;
@@ -903,12 +909,26 @@ template<typename CC>
 inline const CC& tableCsids<CC>::getWriteContent(const csidType &csida)const{
 	return csids[csidsFinder.find(csida)].getWriteContent();
 }
-struct tablesType{
+struct tablesType:noMovCopyable{
 	tableCsids<csidContentDetail> part{"part"};
 	tableCsids<csidContent> line{"line"};
 	void selectWritevs();
 	void print();
 };
+class csidNamespaceTable{
+	private:
+	std::list<tablesType> ttable;
+	constexpr static tablesType *FINDER_NULL=nullptr;
+	flexibleCsidFinder<tablesType*> ttableFinder{FINDER_NULL};
+	public:
+	tablesType& refTable(const csidType&);
+	tablesType& operator()(const csidType&);
+	void selectWritevs();
+	void print();
+};
+inline tablesType& csidNamespaceTable::operator()(const csidType &csid){
+	return refTable(csid);
+}
 
 
 //////////////////////// filesBackupper
@@ -926,11 +946,16 @@ class filesBackupper {
 
 
 //////////////////////// table <-> lineReader
-class tableLineReader{
+class tableLineBase{
+	protected:
+	static const csidType globalCsid;
+};
+class tableLineReader:virtual public tableLineBase{
 	//lineReaderからtableにデータを書き込む
 	private:
-	const csidType &csid;
-	tablesType &table;
+	const csidType &mother;
+	csidType name;
+	csidNamespaceTable &table;
 	lineReader &line;
 	const infoType info;
 	tableCsidsKeyword::option optConv(csidLineReaderRapChecker::option);
@@ -938,30 +963,31 @@ class tableLineReader{
 	csidContentDetail readACsid(csidReader4Read&);
 	public:
 	void read();
-	tableLineReader(const csidType&,tablesType&,lineReader&,const infoTypeCastable&);
+	tableLineReader(const csidType&,csidNamespaceTable&,lineReader&,const infoTypeCastable&);
 	template<class ITA>
-	tableLineReader(const csidType&,tablesType&,lineReader&,ITA&&);
+	tableLineReader(const csidType&,csidNamespaceTable&,lineReader&,ITA&&);
 };
 inline doubleInfo tableLineReader::getDoubleInfo(){
 	return doubleInfo(info,static_cast<infoType>(line.getNow()));
 }
-class tableLineWriter{
+class tableLineWriter:virtual public tableLineBase{
 	//tableからlineWriterにデータを書き込む
 	private:
-	const csidType &csid;
-	const tablesType &table;
+	const csidType &mother;
+	csidType name;
+	csidNamespaceTable &table;
 	lineWriter &line;
 	void writeACsid(csidReader4Write&);
 	public:
 	void write();
-	tableLineWriter(const csidType&,const tablesType&,lineWriter&);
+	tableLineWriter(const csidType&,csidNamespaceTable&,lineWriter&);
 };
 class tableLineRW:
 	public tableLineReader,
 	public tableLineWriter
 {
 	public:
-	tableLineRW(const csidType&,tablesType&,lineRW&,const infoTypeCastable&);
+	tableLineRW(const csidType&,csidNamespaceTable&,lineRW&,const infoTypeCastable&);
 };
 
 
@@ -969,6 +995,7 @@ class tableLineRW:
 class targetDirFiles:noMovCopyable{
 	//ここより上にあったclassなどをまとめてcodeSyncとしての仕事を行う最も高級な奴
 	private:
+	static const csidType globalCsid;
 	bool isTagExtension(const fs::path);
 	void addf(const fs::directory_entry&);
 	fs::path shapingTagDir(const fs::path&);
@@ -979,7 +1006,8 @@ class targetDirFiles:noMovCopyable{
 	const fs::path tagDir;
 	const std::vector<fs::path> tagExtensions;
 	
-	tablesType table;
+	//tablesType table;
+	csidNamespaceTable table;
 	filesBackupper backupper;
 	
 	class aFile:noMovCopyable{
@@ -993,7 +1021,7 @@ class targetDirFiles:noMovCopyable{
 		tableLineRW tlrw;
 		
 		public:
-		aFile(tablesType&,const fs::directory_entry&,const fs::path&);
+		aFile(csidNamespaceTable&,const fs::directory_entry&,const fs::path&);
 		void load(){tlrw.read();}
 		void write(){tlrw.write();}
 		void backupBy(filesBackupper &backupper);
