@@ -24,7 +24,7 @@ int main (int argc,char *argv[]) {
 		//codeShareMain("D:\\00_C_Cpp_Program\\codeShare\\tests\\");
 		codeShareMain(tagPath);
 		std::cout<<"hello world!"<<std::endl;
-		return 0;
+		std::exit(EXIT_SUCCESS);
 	}catch(const std::exception &e){
 		const std::type_info &eType=typeid(e);
 		if(eType==typeid(fs::filesystem_error)){
