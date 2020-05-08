@@ -951,18 +951,20 @@ class filesBackupper {
 //////////////////////// table <-> lineReader
 class tableLineBase{
 	protected:
+	const csidType &mother;
+	csidType name;
 	csidNamespaceTable &table;
 	tablesType &globalT;
 	
-	tableLineBase(csidNamespaceTable&);
+	tableLineBase(const csidType&,csidNamespaceTable&);
 };
-inline tableLineBase::tableLineBase(csidNamespaceTable &tablea):
-	table(tablea),globalT(table(csidNamespaceTable::global)){}
+inline tableLineBase::tableLineBase(const csidType &csida,csidNamespaceTable &tablea):
+	mother(csida),name(mother),table(tablea),globalT(table(csidNamespaceTable::global)){}
 class tableLineReader:virtual public tableLineBase{
 	//lineReaderからtableにデータを書き込む
 	private:
-	const csidType &mother;
-	csidType name;
+	
+	
 	lineReader &line;
 	const infoType info;
 	tableCsidsKeyword::option optConv(csidLineReaderRapChecker::option);
@@ -980,8 +982,6 @@ inline doubleInfo tableLineReader::getDoubleInfo(){
 class tableLineWriter:virtual public tableLineBase{
 	//tableからlineWriterにデータを書き込む
 	private:
-	const csidType &mother;
-	csidType name;
 	lineWriter &line;
 	void writeACsid(csidReader4Write&);
 	public:

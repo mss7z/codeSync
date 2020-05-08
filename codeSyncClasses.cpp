@@ -1004,8 +1004,6 @@ void tableLineReader::read(){
 	DBGOUTLN("targetDirFiles::aFile::loadToが開始");
 	try{
 		const tableCsidsKeyword::option opt=tableCsidsKeyword::INTERNAL;
-		//const lineInfo lit{0,"INFILE"};
-		//const csidType csid=info.getStr();
 		csidLineReaderRapChecker reader{line};
 		reader.resetBeforeNextLine();
 		DBGOUTLN("targetDirFiles::aFile::loadToからloadACsidをコール");
@@ -1016,10 +1014,10 @@ void tableLineReader::read(){
 	}
 }
 tableLineReader::tableLineReader(const csidType &csida,csidNamespaceTable &tablea,lineReader &linea,const infoTypeCastable &infoa):
-	tableLineBase(tablea),mother(csida),name(csida),line(linea),info(infoa){}
+	tableLineBase(csida,tablea),line(linea),info(infoa){}
 template<class ITA>
 tableLineReader::tableLineReader(const csidType &csida,csidNamespaceTable &tablea,lineReader &linea,ITA &&infoa):
-	tableLineBase(tablea),mother(csida),name(csida),line(linea),info(infoTypeCast(infoa)){}
+	tableLineBase(csida,tablea),line(linea),info(infoTypeCast(infoa)){}
 
 void tableLineWriter::writeACsid(csidReader4Write &reader){
 	reader.resetBeforeNextLine();
@@ -1076,10 +1074,10 @@ void tableLineWriter::write(){
 	}
 }
 tableLineWriter::tableLineWriter(const csidType &csida,csidNamespaceTable &tablea,lineWriter &linea):
-	tableLineBase(tablea),mother(csida),name(csida),line(linea){}
+	tableLineBase(csida,tablea),line(linea){}
 
 tableLineRW::tableLineRW(const csidType &csida,csidNamespaceTable &tablea,lineRW &linea,const infoTypeCastable &infoa):
-	tableLineBase(tablea),
+	tableLineBase(csida,tablea),
 	tableLineReader(csida,tablea,linea,infoa),
 	tableLineWriter(csida,tablea,linea)
 {}
