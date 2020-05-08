@@ -71,7 +71,7 @@ void codeShareMain(const std::filesystem::path &taga){
 	/*dir.tagDir="tests\\";
 	//dir.tagDir=".";
 	dir.tagExtensions={{".txt"},{".exe"}};*/
-	dir.load();
+	dir.read();
 	dir.backup();
 	/*for(const auto& i : dir.files){
 		std::cout<<i.fsEntry.path()<<std::endl;

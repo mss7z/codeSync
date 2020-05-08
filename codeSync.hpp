@@ -727,7 +727,7 @@ class csidContentPartWriter:
 	void resetBeforeWrite()override;
 	void addNext(const std::string&)override;
 };
-inline void csidContentPartWriter::resetBeforeWrite(){DBGOUTLN("milessss");
+inline void csidContentPartWriter::resetBeforeWrite(){
 	eraseStrs();
 }
 inline void csidContentPartWriter::addNext(const std::string &str){
@@ -903,7 +903,7 @@ class tableCsids:noMovCopyable,
 
 template<typename CC>
 inline const std::string tableCsids<CC>::aCsid::getSelfName() const{
-	return parent.getSelfName()+"CSID \""+csid+"\"";
+	return parent.getSelfName()+"_CSID \""+csid+"\"";
 }
 template<typename CC>
 inline const CC& tableCsids<CC>::getWriteContent(const csidType &csida)const{
@@ -912,6 +912,7 @@ inline const CC& tableCsids<CC>::getWriteContent(const csidType &csida)const{
 struct tablesType:noMovCopyable{
 	tableCsids<csidContentDetail> part{"part"};
 	tableCsids<csidContent> line{"line"};
+	tablesType(const std::string&);
 	void selectWritevs();
 	void print();
 };
@@ -921,6 +922,8 @@ class csidNamespaceTable{
 	constexpr static tablesType *FINDER_NULL=nullptr;
 	flexibleCsidFinder<tablesType*> ttableFinder{FINDER_NULL};
 	public:
+	static const csidType global;
+	csidNamespaceTable();
 	tablesType& refTable(const csidType&);
 	tablesType& operator()(const csidType&);
 	void selectWritevs();
@@ -948,14 +951,18 @@ class filesBackupper {
 //////////////////////// table <-> lineReader
 class tableLineBase{
 	protected:
-	static const csidType globalCsid;
+	csidNamespaceTable &table;
+	tablesType &globalT;
+	
+	tableLineBase(csidNamespaceTable&);
 };
+inline tableLineBase::tableLineBase(csidNamespaceTable &tablea):
+	table(tablea),globalT(table(csidNamespaceTable::global)){}
 class tableLineReader:virtual public tableLineBase{
 	//lineReaderからtableにデータを書き込む
 	private:
 	const csidType &mother;
 	csidType name;
-	csidNamespaceTable &table;
 	lineReader &line;
 	const infoType info;
 	tableCsidsKeyword::option optConv(csidLineReaderRapChecker::option);
@@ -975,7 +982,6 @@ class tableLineWriter:virtual public tableLineBase{
 	private:
 	const csidType &mother;
 	csidType name;
-	csidNamespaceTable &table;
 	lineWriter &line;
 	void writeACsid(csidReader4Write&);
 	public:
@@ -1005,7 +1011,6 @@ class targetDirFiles:noMovCopyable{
 	const fs::path tagDir;
 	const std::vector<fs::path> tagExtensions;
 	
-	//tablesType table;
 	csidNamespaceTable table;
 	filesBackupper backupper;
 	
@@ -1021,7 +1026,7 @@ class targetDirFiles:noMovCopyable{
 		
 		public:
 		aFile(csidNamespaceTable&,const fs::directory_entry&,const fs::path&);
-		void load(){tlrw.read();}
+		void read(){tlrw.read();}
 		void write(){tlrw.write();}
 		void backupBy(filesBackupper &backupper);
 		std::string getPathStr()const{return relPathStr;}
@@ -1034,7 +1039,7 @@ class targetDirFiles:noMovCopyable{
 	public:
 	targetDirFiles(const fs::path &tagDira,const std::vector<fs::path> &tagExtensionsA);
 
-	void load();
+	void read();
 	void write();
 	void backup();
 	void printFiles2em() const;
