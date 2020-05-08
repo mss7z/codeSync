@@ -409,7 +409,6 @@ class csidDictHash{
 	int hashFunc(const std::string&);
 	T *tableP;
 	public:
-	//constexpr static T NONE=-1,FULL=-2;
 	const T none;
 	csidDictHash(const T&);
 	T getCandidate(const std::string&);
@@ -428,7 +427,6 @@ inline int csidDictHash<T>::hashFunc(const std::string &s){
 }
 template<typename T>
 inline T csidDictHash<T>::getCandidate(const std::string &s){
-	//isFullTablePreFlag=false;
 	tableP=hashTable+hashFunc(s);
 	return *tableP;
 }

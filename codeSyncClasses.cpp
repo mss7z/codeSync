@@ -252,17 +252,17 @@ csidType::indexType csidType::findSame(const std::string &s){
 	indexType cdindex=hash.getCandidate(s);
 	while(true){
 		if(cdindex==hash.none){
-			DBGOUTLN("hash=NONE!");
+			//DBGOUTLN("hash=NONE!");
 			return emptyIndex;
 		}else if(dict[cdindex]==s){
-			DBGOUTLN("hash=FOUND!!!! ハッシュに登録されていました");
+			//DBGOUTLN("hash=FOUND!!!! ハッシュに登録されていました");
 			return cdindex;
 		}else{
-			DBGOUTLN("hash=BAD ハッシュが衝突しました");
+			//DBGOUTLN("hash=BAD ハッシュが衝突しました");
 			cdindex=hash.nextCandidate();
 		}
 		if(hash.isFull()){
-			DBGOUTLN("hash=FULL! ハッシュが満杯です");//万が一ハッシュがいっぱいになったら頑張ってひとつずつ探す
+			//DBGOUTLN("hash=FULL! ハッシュが満杯です");//万が一ハッシュがいっぱいになったら頑張ってひとつずつ探す
 			const std::vector<std::string>::const_iterator begin=dict.begin(),end=dict.end();
 			const std::vector<std::string>::const_iterator findItr=std::find(begin,end,s);
 			if(findItr==end){
@@ -282,35 +282,7 @@ csidType::indexType csidType::findSameElseAdd2Dict(const std::string &s){
 	}else{
 		return cdindex;
 	}
-}/*
-	int cdindex=hash.getCandidate(s);
-	while(true){
-		if(cdindex==csidDictHash::NONE){
-			//DBGOUTLN("hash=NONE! 新規作成します");
-			const int newIndex=dict.size();
-			hash.setCandidate(newIndex);
-			dict.push_back(s);
-			return newIndex;
-		}else if(cdindex==csidDictHash::FULL){
-			//DBGOUTLN("hash=FULL! ハッシュが満杯です");//万が一ハッシュがいっぱいになったら頑張ってひとつずつ探す
-			const std::vector<std::string>::const_iterator begin=dict.begin(),end=dict.end();
-			const std::vector<std::string>::const_iterator findItr=std::find(begin,end,s);
-			if(findItr==end){
-				dict.push_back(s);
-			}
-			return std::distance(begin,findItr);
-		}else{
-			if(dict[cdindex]==s){
-				//DBGOUTLN("hash=FOUND!!!! ハッシュに登録されていました");
-				return cdindex;
-			}else{
-				//DBGOUTLN("hash=BAD ハッシュが衝突しました");
-				cdindex=hash.nextCandidate();
-				continue;
-			}
-		}
-	}
-}*/
+}
 
 csidType::csidType():
 	index(emptyIndex){}
