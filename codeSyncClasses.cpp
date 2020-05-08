@@ -273,7 +273,7 @@ csidType::indexType csidType::findSame(const std::string &s){
 	}
 }
 csidType::indexType csidType::findSameElseAdd2Dict(const std::string &s){
-	DBGOUTLN("search "<<s);
+	//DBGOUTLN("search "<<s);
 	if(const indexType cdindex=findSame(s);cdindex==emptyIndex){
 		const indexType newIndex=dict.size();
 		hash.setCandidate(newIndex);
@@ -281,6 +281,15 @@ csidType::indexType csidType::findSameElseAdd2Dict(const std::string &s){
 		return newIndex;
 	}else{
 		return cdindex;
+	}
+}
+csidType::csidType(const indexType &v):
+	index(v){}
+csidType csidType::getIfFind(const std::string &s){
+	if(const indexType cdindex=findSame(s);cdindex==emptyIndex){
+		return emptyCsid;
+	}else{
+		return csidType{cdindex};
 	}
 }
 

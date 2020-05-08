@@ -459,10 +459,11 @@ class csidType{
 	static indexType findSameElseAdd2Dict(const std::string&);
 	static const indexType emptyIndex;
 	indexType index;
+	csidType(const indexType&);
 	public:
 	static const csidType emptyCsid;
 	static indexType getCsidTotal(){return dict.size();}
-	
+	static csidType getIfFind(const std::string&);
 	indexType getIndex()const{return index;}
 	csidType();
 	csidType(const std::string&);
@@ -694,7 +695,7 @@ class csidContent{
 	void eraseStrs(){strs.erase(strs.begin(),strs.end());}
 	public:
 	const decltype(strs)& refStrs()const{return strs;}
-	csidContent(){DBGOUTLN("csidContentが作られた");}
+	csidContent()=default;
 	csidContent(csidContent&&)noexcept;
 	csidContent(const csidContent&)noexcept;
 	csidContent& operator=(csidContent&&)noexcept;
