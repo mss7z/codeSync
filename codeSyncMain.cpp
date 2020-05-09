@@ -20,7 +20,6 @@ int main (int argc,char *argv[]) {
 			throw std::runtime_error("引数が不正");
 		}
 		codeShareMain(tagPath);
-		std::cout<<"hello world!"<<std::endl;
 		std::exit(EXIT_SUCCESS);
 	}catch(const std::exception &e){
 		const std::type_info &eType=typeid(e);
