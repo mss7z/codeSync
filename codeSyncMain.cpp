@@ -8,6 +8,7 @@ int main (int argc,char *argv[]) {
 	namespace fs=std::filesystem;
 	osSetting();
 	checkDebugMode();
+	codeSync::printCompileTime();
 	//std::cout<<"hello world!"<<std::endl;
 	DBGOUT("hello monkey\n");
 	try{
@@ -43,6 +44,7 @@ int main (int argc,char *argv[]) {
 }
 
 namespace{
+
 void waitForEnter()noexcept{
 	int excCont=0;
 	while(true){

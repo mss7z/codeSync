@@ -50,6 +50,7 @@ inline std::string& str2lower(std::string &s){
 	});
 	return s;
 }
+void printCompileTime()noexcept;
 
 
 class noCopyable{

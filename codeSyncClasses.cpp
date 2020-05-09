@@ -815,7 +815,6 @@ void tableCsids<CC>::aCsid::selectWritev(){
 		//以上のどれにもあてはまらず、推論できない場合
 		em.err<<getSelfName()<<"は"<<varCont<<"種類があり、masterを特定できません"<<getFLInfosStr()<<std::endl;
 	}
-	DBGOUTLN("mileaa");
 	if(isWritevAndCheck()){
 		em.info<<getSelfName()<<"はこれがマスターになります"<<writev->getFLInfosStr()<<std::endl;
 	}

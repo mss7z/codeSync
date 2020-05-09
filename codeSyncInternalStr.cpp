@@ -1,7 +1,19 @@
 #include "codeSync.hpp"
 
 namespace codeSync{
-	
+
+void printCompileTime()noexcept{
+	std::cout<<"\
+=====================================================================\n\
+   ##  ##    starting   Code Sync   ...\n\
+  ##  ##     \n\
+ ##  ###### ## ####   Built time: "<<__DATE__<<" "<<__TIME__<<"\n\
+  ##    ##  ## #  ##  Repository: https://github.com/mss7z/codeSync\n\
+   ##  ##   ## ####\n\
+====================================================================="
+	<<std::endl;
+}
+
 void targetDirFiles::addInternalCsidsIfDef(){
 	if(isThereCsidInGlobalTable("__codeSync_selfIntroductionEn")){
 		const std::string s{"\
