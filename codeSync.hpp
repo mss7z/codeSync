@@ -422,7 +422,7 @@ inline int csidDictHash<T>::hashFunc(const std::string &s){
 	//0b 0000              000 0000                00
 	//   ^~~~              ^~~~~~~~                ^~
 	//   csidのサイズ由来  csidの最初の文字由来    予備領域
-	assert((((s.size()&0xF)<<9)|((static_cast<int>(*s.c_str())&0x7F)<<2))<hashTableSize);
+	assert((((s.size()&0xF)<<9)|((static_cast<int>(*s.c_str())&0x7F)<<2))<hashTableMainSize);
 	return (((s.size()&0xF)<<9)|((static_cast<int>(*s.c_str())&0x7F)<<2))&hashTableMask;
 }
 template<typename T>
