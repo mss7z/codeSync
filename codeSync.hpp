@@ -17,6 +17,7 @@
 
 
 #if _WIN64 || _WIN32
+	//コンソールをUTF-8に切り替える
 	inline void osSetting(){std::system("chcp 65001 > nul");}
 #else
 	inline void osSetting(){std::cout<<"hello linux?"<<std::endl;}
@@ -98,10 +99,10 @@ class errorManager:noMovCopyable{
 	};
 	std::vector<css*> cssLocker;
 	public:
-	constexpr static const char *cont=":\n\t";
+	/*constexpr static const char *cont=":\n\t";
 	constexpr static const char *add="\n\t";
 	constexpr static const char *indent="\n\t\t";
-	constexpr static const char *dot="* ";
+	constexpr static const char *dot="* ";*/
 	css err{this},warn{this},info{this},chk{this};
 	void clear();
 	bool isErr()const{return !(err.str().empty());}
@@ -558,6 +559,7 @@ class flexibleCsidFinder:public csidFinderBase<T>{
 		find(const csidType&)const override;
 };
 /*
+//現在使っていないが、将来的に使うかもしれないので残してるclass
 template<typename T>
 class constCsidFinder:public csidFinderBase<T>{
 	private:
