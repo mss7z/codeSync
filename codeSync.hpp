@@ -129,9 +129,7 @@ class timeLib {
 	const ch::system_clock::time_point tp;
 	const std::time_t tt;
 	static std::tm localtimeGen(const std::time_t &tta){
-		std::tm temp;
-		localtime_s(&temp,&tta);
-		return temp;
+		return *std::localtime(&tta);
 	}
 	const std::tm tmt;
 	
