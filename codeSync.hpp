@@ -222,7 +222,7 @@ inline std::string fileInfo::getStrNoAt()const{
 	return "\""+refFileName()+"\" ("+refFileTime().getStr()+")";
 }
 inline std::string fileInfo::getStr()const{
-	return "@ "+getStrNoAt();
+	return getStrNoAt();
 }
 
 struct lineInfo:public infoTypeCastable{
@@ -268,7 +268,7 @@ class doubleInfo:public infoTypeCastable{
 	std::string getStr()const override;
 };
 inline std::string doubleInfo::getStr()const{
-	return mother.getStr()+"\n"+child.getStr();
+	return "@ "+mother.getStr()+"\n"+child.getStr();
 }
 
 class stringInfo:public infoTypeCastable{
