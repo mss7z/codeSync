@@ -334,7 +334,7 @@ class lineStreamRW:
 	std::streambuf* getRdbuf()const{return stp->rdbuf();}
 	int getLoadedLineNum()const{return li.lineNum;}
 	lineStreamRW(std::iostream*);
-	void gotoLine(int);
+	//void gotoLine(int);
 	const lineType& getNext()override;
 	const lineType& getNow();
 	void addNext(const std::string&)override;
@@ -362,7 +362,8 @@ class lineFileRW:public lineStreamRW{
 inline void lineFileRW::delContent(){
 	reopenAs(std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
 }
-
+/*
+//現在使っていないが、将来的に使うかもしれないので残してるclass
 class lineSeekReader:public lineReader{
 	//任意のlineStreamRWに寄生し、その行の区間を使う(std::string_viewに近い思考)
 	//だけど、現在使っていません
@@ -381,9 +382,7 @@ class lineSeekReader:public lineReader{
 	void captureEnd(int offset=-1);
 	void captureMark(int offset=1);
 	void restoreMark();
-	
-	//friend lineSeekReader;
-};
+};*/
 class lineStringReader:public lineStreamRW{
 	//stringstreamを行単位で読み書き
 	private:
@@ -558,6 +557,7 @@ class flexibleCsidFinder:public csidFinderBase<T>{
 	typename std::conditional<std::is_same<T,bool>::value,bool,const T&>::type 
 		find(const csidType&)const override;
 };
+/*
 template<typename T>
 class constCsidFinder:public csidFinderBase<T>{
 	private:
@@ -577,10 +577,8 @@ inline auto constCsidFinder<T>::find(const csidType &toa)const
 	->typename std::conditional<std::is_same<T,bool>::value,bool,const T&>::type
 {
 	return this->table.at(static_cast<tableST>(toa));
-}
+}*/
 template<class PC>
-
-
 class csidIsFinder:public PC{
 	public:
 	csidIsFinder();
@@ -593,7 +591,7 @@ template<class PC>
 inline void csidIsFinder<PC>::set(const csidType &toa){
 	PC::set(toa,true);
 }
-using constCsidIsFinder=csidIsFinder<constCsidFinder<bool>>;
+//using constCsidIsFinder=csidIsFinder<constCsidFinder<bool>>;
 using flexibleCsidIsFinder=csidIsFinder<flexibleCsidFinder<bool>>;
 
 
@@ -764,6 +762,8 @@ inline void csidContentPartWriter::resetBeforeWrite(){
 inline void csidContentPartWriter::addNext(const std::string &str){
 	addToStrs(str);
 }
+/*
+//現在使っていないが、将来的に使うかもしれないので残してるclass
 class lineCsidContentReader:
 	public lineReader
 {
@@ -790,7 +790,7 @@ inline const lineType &lineCsidContentReader::getNext(){
 	li.lineNum++;
 	itr++;
 	return li;
-}
+}*/
 
 
 class csidContentDetail:

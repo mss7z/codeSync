@@ -144,6 +144,7 @@ void lineStreamRW::resetSt(){
 	isLastLine=isStreamEOS();
 	isFirstLine=true;
 }
+/*
 void lineStreamRW::gotoLine(int tag){
 	//現在使用されていない関数
 	DBGOUT(li.lineNum<<"から"<<tag);
@@ -164,7 +165,7 @@ void lineStreamRW::gotoLine(int tag){
 			throw std::logic_error("目標行数が見つかりません @lineStreamRW::gotoLine");
 		}
 	}
-}
+}*/
 
 void lineFileRW::chkOpened(){
 	if(!(*f))throw fileError(getSelfName()+"を開けない");
@@ -183,7 +184,8 @@ void lineFileRW::resetBeforeWrite(){
 	resetSt();
 	delContent();
 }
-
+/*
+//現在使っていないが、将来的に使うかもしれないので残してるclass
 lineSeekReader::lineSeekReader(lineStreamRW &lordLLa):
 	lordLL(lordLLa)
 {}
@@ -212,7 +214,7 @@ void lineSeekReader::captureMark(int offset){
 }
 void lineSeekReader::restoreMark(){
 	lordLL.gotoLine(markLineNum);
-}
+}*/
 
 lineStringReader::lineStringReader(lineStreamRW &mother):
 	lineStreamRW(&ss)
@@ -346,10 +348,11 @@ auto flexibleCsidFinder<T>::find(const csidType &toa)const
 		return this->none;
 	}
 }
+/*
 template<typename T>
 constCsidFinder<T>::constCsidFinder(const T &nonea):
 	csidFinderBase<T>(csidType::getCsidTotal(),nonea)
-{}
+{}*/
 
 //////////////////////// csidReader(RW)
 bool csidLineReader::isPracticableNextLine(){
@@ -595,12 +598,10 @@ csidContentLineReader::csidContentLineReader(const csidContent &lordCCa):
 	assert(lordCC.refStrs().size()==1);
 }
 
-
+/*
+//現在使っていないが、将来的に使うかもしれないので残してるclass
 lineCsidContentReader::lineCsidContentReader(const csidContent &lordCCa):
-	lordCC(lordCCa)
-{
-	
-}
+	lordCC(lordCCa){}*/
 
 
 csidContentDetail::csidContentDetail(csidContentDetail &&v)noexcept:
