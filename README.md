@@ -22,7 +22,7 @@ make
 g++ -std=c++17 -Wall -Wextra -pedantic-errors -DNDEBUG   -c -o codeSyncMain.o codeSyncMain.cpp
 g++ -std=c++17 -Wall -Wextra -pedantic-errors -DNDEBUG   -c -o codeSyncClasses.o codeSyncClasses.cpp
 g++ -std=c++17 -Wall -Wextra -pedantic-errors -DNDEBUG   -c -o codeSyncInternalStr.o codeSyncInternalStr.cpp
-g++ codeSyncMain.o codeSyncClasses.o codeSyncInternalStr.o -o codeSync.exe
+g++ codeSyncMain.o codeSyncClasses.o codeSyncInternalStr.o -static -lstdc++ -lgcc -o codeSync.exe
 ~~~
 
 次のversionでのコンパイルを確認しています
