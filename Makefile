@@ -1,5 +1,6 @@
 CXX=g++
 CXXFLAGS=-std=c++17 -Wall -Wextra -pedantic-errors
+LINKFLAGS=
 OBJS=codeSyncMain.o codeSyncClasses.o codeSyncInternalStr.o
 PROGRAM=codeSync
 ifeq ($(OS),Windows_NT)
@@ -8,7 +9,8 @@ ifeq ($(OS),Windows_NT)
 endif
 
 .PHONY: release
-release: CXXFLAGS+= -DNDEBUG -static -lstdc++ -lgcc
+release: CXXFLAGS+= -DNDEBUG 
+release: LINKFLAGS+= -static -lstdc++ -lgcc
 release: rebuild
 
 .PHONY: debug
@@ -17,7 +19,7 @@ debug: build
 .PHONY: build
 build:$(PROGRAM)
 $(PROGRAM): $(OBJS)
-	$(CXX) $^ -o $@
+	$(CXX) $^ $(LINKFLAGS) -o $@
 codeSyncMain.o:codeSyncMain.cpp
 
 codeSyncClasses.o:codeSyncClasses.cpp
