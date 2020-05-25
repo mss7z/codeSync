@@ -8,7 +8,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 .PHONY: release
-release: CXXFLAGS+= -DNDEBUG
+release: CXXFLAGS+= -DNDEBUG -static -lstdc++ -lgcc
 release: rebuild
 
 .PHONY: debug
