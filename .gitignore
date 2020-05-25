@@ -2,4 +2,4 @@
 *.o
 tests/
 tests_CSBackups/
-!release/
+!release/*
